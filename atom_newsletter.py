@@ -126,7 +126,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     # HEADER
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:20px 16px;text-align:center;color:#FFFFFF;">'
-        f'<h1 style="margin:0;font-size:28px;line-height:1.4;">Simon Willison's atom</h1>'
+        f'<h1 style="margin:0;font-size:28px;line-height:1.4;">Simon Willison\'s atom</h1>'
         f'<p style="margin:8px 0 0 0;font-size:15px;color:#CBD5E1;">Generated on {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
         "</div>"
     )
