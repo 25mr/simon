@@ -1,0 +1,41 @@
+name: Atom Newsletter Generator
+
+on:
+  schedule:
+    - cron: "06 06 * * *"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Atom Newsletter Script
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          MAILEROO_API_KEY: ${{ secrets.MAILEROO_API_KEY }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: python atom_newsletter.py
+
+      - name: Commit and push index.html to gh-pages
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          branch: gh-pages
+          commit_message: "Update Atom feed index.html"
+          file_pattern: "index.html"
