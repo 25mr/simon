@@ -27,10 +27,8 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     root = ET.fromstring(xml_content)
     NS = {'atom': 'http://www.w3.org/2005/Atom'}
 
-    feed_updated_str = root.find('atom:updated', NS).text
-    feed_updated = datetime.fromisoformat(feed_updated_str.replace('Z', '+00:00'))
-    # 昨天 参考的是 feed_updated 的 date
-    yesterday_utc = feed_updated - timedelta(days=1)
+    now_utc = datetime.now(timezone.utc)
+    yesterday_utc = now_utc - timedelta(days=1)
 
     entries = []
     for e in root.findall('atom:entry', NS):
@@ -50,7 +48,7 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
         summary_content = summary_elem.text or ''
 
         # 只保留前一天 UTC 的 entry
-        if yesterday_utc.date() <= updated.date() < feed_updated.date():
+        if yesterday_utc.date() <= updated.date() < now_utc.date():
             entries.append({
                 'title': title,
                 'link': link,
