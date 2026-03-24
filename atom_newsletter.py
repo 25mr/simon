@@ -244,7 +244,7 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
             "html": html_body,
         }
         try:
-            resp = requests.post(url, headers=headers, data=payload, timeout=30)
+            resp = requests.post(url, headers=headers, json=payload, timeout=30)
             print(f"响应状态码: {resp.status_code}")
             print(f"响应内容: {resp.text}")
 
