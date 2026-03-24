@@ -187,7 +187,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                 zh_html = groq_translate_html(summary_html)
                 if zh_html:
                     parts.append(
-                        '<div style="margin-top:12px;font-size:13px;line-height:1.6;color:#374151;">'
+                        '<div style="margin-top:12px;font-size:14px;line-height:1.6;color:#374151;">'
                         '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">中文翻译:</h3>'
                         f"{zh_html}"
                         "</div>"
