@@ -1,3 +1,4 @@
+import re
 import os
 import requests
 from datetime import datetime, timedelta, timezone
@@ -46,7 +47,14 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
         updated = datetime.fromisoformat(updated_str.replace('Z', '+00:00'))
         summary_type = summary_elem.get('type') or ''
         summary_content = summary_elem.text or ''
-
+        
+        summary_content = re.sub(
+            r'\s*<p>\s*Tags:\s*.*?</p>',
+            '',
+            summary_content,
+            flags=re.DOTALL
+        ).strip()
+        
         # 只保留前一天 UTC 的 entry
         if yesterday_utc.date() <= updated.date() < now_utc.date():
             entries.append({
