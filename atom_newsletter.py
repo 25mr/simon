@@ -78,7 +78,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
 
         # 这里示例用 mixtral-8x7b-32768，可视为 groq/compound 中的一个模型
         payload = {
-            "model": "mixtral-8x7b-32768",
+            "model": "groq/compound-mini",
             "messages": [
                 {
                     "role": "system",
