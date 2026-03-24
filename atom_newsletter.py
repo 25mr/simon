@@ -84,7 +84,6 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
             "Content-Type": "application/json",
         }
 
-        # 这里示例用 mixtral-8x7b-32768，可视为 groq/compound 中的一个模型
         payload = {
             "model": "groq/compound-mini",
             "messages": [
@@ -97,8 +96,8 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
                     "content": summary_html
                 }
             ],
-            "temperature": 0.1,
-            "max_tokens": 2048
+            "temperature": 0.2,
+            "max_tokens": 4096
         }
 
         resp = requests.post(url, headers=headers, json=payload, timeout=60)
@@ -177,7 +176,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
 
             # 英文原文
             parts.append(
-                '<div style="margin-top:10px;">'
+                '<div style="margin-top:10px;font-size:14px;line-height:1.6;color:#111827;">'
                 '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">English Original:</h3>'
                 # summary 是原本的 HTML 片段，直接嵌入
                 f'{summary_html}'
@@ -188,7 +187,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                 zh_html = groq_translate_html(summary_html)
                 if zh_html:
                     parts.append(
-                        '<div style="margin-top:12px;">'
+                        '<div style="margin-top:12px;font-size:13px;line-height:1.6;color:#374151;">'
                         '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">中文翻译:</h3>'
                         f"{zh_html}"
                         "</div>"
