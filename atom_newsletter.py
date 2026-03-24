@@ -218,10 +218,9 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
         print("Maileroo API key 或 MAIL_FROM 未配置，跳过发送。")
         return
 
-    url = "https://smtp.maileroo.com/api/v2"
+    url = "https://smtp.maileroo.com/send"
     headers = {
-        "Authorization": f"Bearer {MAILEROO_API_KEY}",
-        "Content-Type": "application/json",
+        "X-API-Key": MAILEROO_API_KEY,
     }
 
     for addr in to_list:
@@ -233,9 +232,14 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
             "sender_name": "Newsletter",
         }
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=30)
+            resp = requests.post(url, headers=headers, data=payload, timeout=30)
+            print(f"响应状态码: {resp.status_code}")
+            print(f"响应内容: {resp.text}")
+
             resp.raise_for_status()
             print(f"邮件发送成功: {addr}")
+        except requests.exceptions.HTTPError as e:
+            print(f"邮件发送失败 {addr}: HTTP {resp.status_code} - {resp.text}")
         except Exception as e:
             print(f"邮件发送失败 {addr}: {e}")
 
