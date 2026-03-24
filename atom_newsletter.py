@@ -218,7 +218,7 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
         print("Maileroo API key 或 MAIL_FROM 未配置，跳过发送。")
         return
 
-    url = "https://api.maileroo.com/v1/email"
+    url = "https://smtp.maileroo.com/api/v2"
     headers = {
         "Authorization": f"Bearer {MAILEROO_API_KEY}",
         "Content-Type": "application/json",
