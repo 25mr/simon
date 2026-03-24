@@ -111,7 +111,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
-    subject = f"🍈Simon Willison's atom- {subject_date}"
+    subject = f"🍈 Simon atom - {subject_date}"
 
     parts = []
     parts.append("<!DOCTYPE html>")
@@ -126,8 +126,8 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     # HEADER
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:20px 16px;text-align:center;color:#FFFFFF;">'
-        f'<h1 style="margin:0;font-size:22px;line-height:1.4;">{html.escape(subject)}</h1>'
-        f'<p style="margin:8px 0 0 0;font-size:13px;color:#CBD5E1;">Generated on {now_bj.strftime("%Y-%m-%d %H:%M")}</p>'
+        f'<h1 style="margin:0;font-size:28px;line-height:1.4;">Simon Willison's atom</h1>'
+        f'<p style="margin:8px 0 0 0;font-size:15px;color:#CBD5E1;">Generated on {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
         "</div>"
     )
 
@@ -202,7 +202,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:16px;text-align:center;color:#FFFFFF;">'
         f'<p style="margin:0;font-size:12px;color:#CBD5E1;">'
-        f'Source:simonwillison.net'
+        f'Source: simonwillison.net'
         "</p>"
         "</div>"
     )
@@ -229,7 +229,6 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
             "from": MAIL_FROM,
             "subject": subject,
             "html": html_body,
-            "sender_name": "Newsletter",
         }
         try:
             resp = requests.post(url, headers=headers, data=payload, timeout=30)
@@ -346,7 +345,7 @@ def main():
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
-    subject = f"🍈Simon Willison's atom- {subject_date}"
+    subject = f"🍈 Simon atom - {subject_date}"
 
     try:
         email_html = build_email_html(entries, with_translation=True)
