@@ -30,7 +30,7 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     feed_updated_str = root.find('atom:updated', NS).text
     feed_updated = datetime.fromisoformat(feed_updated_str.replace('Z', '+00:00'))
     # 昨天 参考的是 feed_updated 的 date
-    yesterday_utc = feed_updated - timedelta(days=0)
+    yesterday_utc = feed_updated - timedelta(days=1)
 
     entries = []
     for e in root.findall('atom:entry', NS):
