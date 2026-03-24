@@ -33,9 +33,9 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
         run: python atom_newsletter.py
 
-      - name: Commit and push index.html to gh-pages
+      - name: Commit and push index.html to main
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          branch: gh-pages
+          branch: main
           commit_message: "Update Atom feed index.html"
           file_pattern: "index.html"
