@@ -225,15 +225,21 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
         print("Maileroo API key 或 MAIL_FROM 未配置，跳过发送。")
         return
 
-    url = "https://smtp.maileroo.com/send"
+    url = "https://smtp.maileroo.com/api/v2/emails"
     headers = {
         "X-API-Key": MAILEROO_API_KEY,
+        "Content-Type": "application/json", 
     }
 
     for addr in to_list:
         payload = {
-            "to": addr,
-            "from": MAIL_FROM,
+            "from": {
+                "address": MAIL_FROM,
+                "display_name": "Newsletter"
+            },
+            "to": [
+                {"address": addr}
+            ],
             "subject": subject,
             "html": html_body,
         }
