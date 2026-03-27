@@ -109,12 +109,46 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
         return None
 
 
+def _clamp_images(html_content: str) -> str:
+    """给 summary 里的每个 <img> 注入 max-width:100% 的 inline style，
+       同时移除可能存在的 width/height 属性，防止撑破布局。"""
+    # 移除 <img> 上的 width="..." / height="..." 属性
+    html_content = re.sub(
+        r'(<img\b[^>]*?)\s+width\s*=\s*["\']?\d+["\']?',
+        r'\1',
+        html_content,
+        flags=re.IGNORECASE,
+    )
+    html_content = re.sub(
+        r'(<img\b[^>]*?)\s+height\s*=\s*["\']?\d+["\']?',
+        r'\1',
+        html_content,
+        flags=re.IGNORECASE,
+    )
+
+    # 如果 <img> 已有 style="..."，在里面追加；否则插入新的 style
+    def _inject_style(m: re.Match) -> str:
+        tag = m.group(0)
+        inject = "max-width:100%!important;height:auto!important;display:block;"
+        if re.search(r'style\s*=\s*["\']', tag, re.IGNORECASE):
+            # 已有 style，追加到末尾
+            tag = re.sub(
+                r'(style\s*=\s*["\'])',
+                rf'\1{inject}',
+                tag,
+                count=1,
+                flags=re.IGNORECASE,
+            )
+        else:
+            # 没有 style，插入一个
+            tag = tag.replace("<img", f'<img style="{inject}"', 1)
+        return tag
+
+    html_content = re.sub(r'<img\b[^>]*?/?>', _inject_style, html_content, flags=re.IGNORECASE)
+    return html_content
+
+
 def build_email_html(entries: List[Dict], with_translation: bool) -> str:
-    """
-    根据 entries 构建完整 HTML 邮件。
-    - with_translation=True 时：尝试翻译每条 summary；
-    - False 时：只包含英文原文。
-    """
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
@@ -127,8 +161,32 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     parts.append('<meta charset="UTF-8">')
     parts.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
     parts.append(f"<title>{html.escape(subject)}</title>")
+
+    # ────────── 新增：全局样式，约束图片/表格宽度 ──────────
+    parts.append("""<style>
+      img {
+        max-width: 100% !important;
+        height: auto !important;
+        display: block;
+      }
+      table {
+        max-width: 100% !important;
+        width: auto !important;
+      }
+      pre, code {
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+      }
+    </style>""")
+    # ─────────────────────────────────────────────────────
+
     parts.append("</head>")
-    parts.append('<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background-color:#F9FAFB;">')
+    parts.append(
+        '<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;'
+        'background-color:#F9FAFB;'
+        # ▼ 防止出现横向滚动条
+        'width:100%!important;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">'
+    )
 
     # HEADER
     parts.append(
@@ -138,8 +196,11 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
         "</div>"
     )
 
-    # 容器
-    parts.append('<div style="max-width:600px;margin:0 auto;padding:16px;background-color:#FFFFFF;">')
+    # ▼ 外层容器加 overflow:hidden，兜底防溢出
+    parts.append(
+        '<div style="max-width:600px;margin:0 auto;padding:16px;'
+        'background-color:#FFFFFF;overflow:hidden;word-wrap:break-word;">'
+    )
 
     if not entries:
         parts.append(
@@ -154,7 +215,9 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             updated_str = entry["updated"]
             summary_html = entry["summary"]
 
-            # 转换时间到北京
+            # ────────── 关键：处理 summary 中的图片 ──────────
+            summary_html = _clamp_images(summary_html)
+
             try:
                 updated_dt = datetime.fromisoformat(updated_str.replace("Z", "+00:00"))
                 updated_bj = updated_dt.astimezone(beijing_tz)
@@ -165,7 +228,6 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             title_safe = html.escape(title)
             link_safe = html.escape(link, quote=True)
 
-            # 每条 entry 容器
             parts.append(
                 '<div style="margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid #E2E8F0;">'
                 f'<h2 style="margin:0 0 6px 0;font-size:18px;color:#0F172A;line-height:1.4;">'
@@ -174,11 +236,10 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                 f'<p style="margin:0 0 12px 0;font-size:12px;color:#64748B;">Published: {updated_display}</p>'
             )
 
-            # 英文原文
+            # ▼ 内容区也加 overflow:hidden
             parts.append(
-                '<div style="margin-top:10px;font-size:14px;line-height:1.6;color:#111827;">'
+                '<div style="margin-top:10px;font-size:14px;line-height:1.6;color:#111827;overflow:hidden;">'
                 '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">English Original:</h3>'
-                # summary 是原本的 HTML 片段，直接嵌入
                 f'{summary_html}'
                 "</div>"
             )
@@ -186,8 +247,9 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             if with_translation:
                 zh_html = groq_translate_html(summary_html)
                 if zh_html:
+                    zh_html = _clamp_images(zh_html)
                     parts.append(
-                        '<div style="margin-top:12px;font-size:14px;line-height:1.6;color:#374151;">'
+                        '<div style="margin-top:12px;font-size:14px;line-height:1.6;color:#374151;overflow:hidden;">'
                         '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">中文翻译:</h3>'
                         f"{zh_html}"
                         "</div>"
@@ -201,15 +263,15 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                         "</div>"
                     )
 
-            parts.append("</div>")  # 结束单条 entry
+            parts.append("</div>")
 
-    parts.append("</div>")  # 结束主体容器
+    parts.append("</div>")
 
     # FOOTER
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:16px;text-align:center;color:#FFFFFF;">'
-        f'<p style="margin:0;font-size:12px;color:#CBD5E1;">'
-        f'Source: simonwillison.net'
+        '<p style="margin:0;font-size:12px;color:#CBD5E1;">'
+        'Source: simonwillison.net'
         "</p>"
         "</div>"
     )
