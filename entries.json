@@ -1,0 +1,44 @@
+[
+  {
+    "title": "Supply Chain Attack on Axios Pulls Malicious Dependency from npm",
+    "link": "https://simonwillison.net/2026/Mar/31/supply-chain-attack-on-axios/#atom-everything",
+    "updated": "2026-03-31T23:28:40+00:00",
+    "summary": "<p><strong><a href=\"https://socket.dev/blog/axios-npm-package-compromised\">Supply Chain Attack on Axios Pulls Malicious Dependency from npm</a></strong></p>\nUseful writeup of today's supply chain attack against Axios, the HTTP client NPM package with <a href=\"https://www.npmjs.com/package/axios\">101 million weekly downloads</a>. Versions <code>1.14.1</code> and <code>0.30.4</code> both included a new dependency called <code>plain-crypto-js</code> which was freshly published malware, stealing credentials and installing a remote access trojan (RAT).</p>\n<p>It looks like the attack came from a leaked long-lived npm token. Axios have <a href=\"https://github.com/axios/axios/issues/7055\">an open issue to adopt trusted publishing</a>, which would ensure that only their GitHub Actions workflows are able to publish to npm. The malware packages were published without an accompanying GitHub release, which strikes me as a useful heuristic for spotting potentially malicious releases - the same pattern was present for LiteLLM <a href=\"https://simonwillison.net/2026/Mar/24/malicious-litellm/\">last week</a> as well.\n\n    <p><small></small>Via <a href=\"https://lobste.rs/s/l57wuc/supply_chain_attack_on_axios\">lobste.rs</a></small></p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "datasette-llm 0.1a4",
+    "link": "https://simonwillison.net/2026/Mar/31/datasette-llm/#atom-everything",
+    "updated": "2026-03-31T21:17:23+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/datasette/datasette-llm/releases/tag/0.1a4\">datasette-llm 0.1a4</a></p>\n    <blockquote>\n<ul>\n<li>Ability to <a href=\"https://github.com/datasette/datasette-llm/blob/0.1a4/README.md#model-references-with-custom-api-keys\">configure different API keys for models based on their purpose</a> - for example, set it up so enrichments always use <code>gpt-5.4-mini</code> with an API key dedicated to that purpose. <a href=\"https://github.com/datasette/datasette-llm/pull/4\">#4</a></li>\n</ul>\n</blockquote>\n<p>I released <a href=\"https://github.com/simonw/llm-echo/releases/tag/0.3\">llm-echo 0.3</a> to provide an API key testing utility I needed for the tests for this new feature.</p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "llm-all-models-async 0.1",
+    "link": "https://simonwillison.net/2026/Mar/31/llm-all-models-async/#atom-everything",
+    "updated": "2026-03-31T20:52:02+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm-all-models-async/releases/tag/0.1\">llm-all-models-async 0.1</a></p>\n    <p>LLM plugins can define new models in both <a href=\"https://llm.datasette.io/en/stable/plugins/tutorial-model-plugin.html\">sync</a> and <a href=\"https://llm.datasette.io/en/stable/plugins/advanced-model-plugins.html#async-models\">async</a> varieties. The async variants are most common for API-backed models - sync variants tend to be things that run the model directly within the plugin.</p>\n<p>My <a href=\"https://simonwillison.net/2026/Mar/30/mr-chatterbox/#running-it-locally-with-llm\">llm-mrchatterbox</a> plugin is sync only. I wanted to try it out with various Datasette LLM features (specifically <a href=\"https://github.com/datasette/datasette-enrichments-llm\">datasette-enrichments-llm</a>) but Datasette can only use async models.</p>\n<p>So... I had Claude spin up this plugin that turns sync models into async models using a thread pool. This ended up needing an extra plugin hook mechanism in LLM itself, which I shipped just now in <a href=\"https://llm.datasette.io/en/stable/changelog.html#v0-30\">LLM 0.30</a>.</p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "llm 0.30",
+    "link": "https://simonwillison.net/2026/Mar/31/llm/#atom-everything",
+    "updated": "2026-03-31T20:35:51+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm/releases/tag/0.30\">llm 0.30</a></p>\n    <blockquote>\n<ul>\n<li>The <a href=\"http://llm.datasette.io/en/stable/plugins/plugin-hooks.html#plugin-hooks-register-models\">register_models() plugin hook</a> now takes an optional <code>model_aliases</code> parameter listing all of the models, async models and aliases that have been registered so far by other plugins. A plugin with <code>@hookimpl(trylast=True)</code> can use this to take previously registered models into account. <a href=\"https://github.com/simonw/llm/issues/1389\">#1389</a></li>\n<li>Added docstrings to public classes and methods and included those directly in the documentation.</li>\n</ul>\n</blockquote>",
+    "summary_type": "html"
+  },
+  {
+    "title": "llm-echo 0.4",
+    "link": "https://simonwillison.net/2026/Mar/31/llm-echo/#atom-everything",
+    "updated": "2026-03-31T16:48:59+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm-echo/releases/tag/0.4\">llm-echo 0.4</a></p>\n    <blockquote>\n<ul>\n<li>Prompts now have the <code>input_tokens</code> and <code>output_tokens</code> fields populated on the response.</li>\n</ul>\n</blockquote>",
+    "summary_type": "html"
+  },
+  {
+    "title": "llm-echo 0.3",
+    "link": "https://simonwillison.net/2026/Mar/31/llm-echo-2/#atom-everything",
+    "updated": "2026-03-31T15:43:26+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm-echo/releases/tag/0.3\">llm-echo 0.3</a></p>\n    <blockquote>\n<ul>\n<li>Mechanisms for <a href=\"https://github.com/simonw/llm-echo/blob/0.3/README.md#tool-calling\">testing tool calls</a>. #3</li>\n<li>Mechanism for <a href=\"https://github.com/simonw/llm-echo/blob/0.3/README.md#raw-responses\">testing raw responses</a>. #4</li>\n<li>New <code>echo-needs-key</code> model for <a href=\"https://github.com/simonw/llm-echo/blob/0.3/README.md#echo-needs-key-model\">testing model key logic</a>. #7</li>\n</ul>\n</blockquote>",
+    "summary_type": "html"
+  }
+]
