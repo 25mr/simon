@@ -106,7 +106,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
     max_retries = 4
     for attempt in range(1, max_retries + 1):
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=60)
+            resp = requests.post(url, headers=headers, json=payload, timeout=100)
             resp.raise_for_status()
             data = resp.json()
             result = data["choices"][0]["message"]["content"].strip()
