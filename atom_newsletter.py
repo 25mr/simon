@@ -1,6 +1,8 @@
 import re
 import os
+import time
 import requests
+import json
 from datetime import datetime, timedelta, timezone
 import xml.etree.ElementTree as ET
 import html
@@ -71,42 +73,55 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
 def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
     """
     使用 Groq API 将 HTML 文本翻译成中文，保持 HTML 结构。
-    如果失败则返回 None。
+    失败时最多重试 3 次（含首次），每次重试间隔递增。
+    如果全部失败则返回 None。
     """
     if not summary_html or not GROQ_API_KEY:
         return None
 
-    try:
-        # 使用 Groq OpenAI 兼容接口
-        url = "https://api.groq.com/openai/v1/chat/completions"
-        headers = {
-            "Authorization": f"Bearer {GROQ_API_KEY}",
-            "Content-Type": "application/json",
-        }
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": "groq/compound-mini",
+        "messages": [
+            {
+                "role": "system",
+                "content": (
+                    f"你是一个专业的翻译助手，请将下面的英文 HTML 内容"
+                    f"准确翻译成{to_lang}，必须保持 HTML 标签结构不变。"
+                ),
+            },
+            {
+                "role": "user",
+                "content": summary_html,
+            },
+        ],
+        "temperature": 0.2,
+        "max_tokens": 4096,
+    }
 
-        payload = {
-            "model": "groq/compound-mini",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": f"你是一个专业的翻译助手，请将下面的英文 HTML 内容准确翻译成{to_lang}，必须保持 HTML 标签结构不变。"
-                },
-                {
-                    "role": "user",
-                    "content": summary_html
-                }
-            ],
-            "temperature": 0.2,
-            "max_tokens": 4096
-        }
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=60)
+            resp.raise_for_status()
+            data = resp.json()
+            result = data["choices"][0]["message"]["content"].strip()
+            if attempt > 1:
+                print(f"[Groq] 第 {attempt} 次重试成功")
+            return result
+        except Exception as e:
+            print(f"[Groq] 翻译失败（第 {attempt}/{max_retries} 次）：{e}")
+            if attempt < max_retries:
+                wait = 2 * attempt  # 2s, 4s 递增等待
+                print(f"[Groq] {wait} 秒后重试…")
+                time.sleep(wait)
 
-        resp = requests.post(url, headers=headers, json=payload, timeout=60)
-        resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        print(f"[Groq] 翻译失败：{e}")
-        return None
+    print("[Groq] 已达最大重试次数，翻译放弃")
+    return None
 
 
 def _clamp_images(html_content: str) -> str:
@@ -318,6 +333,58 @@ def send_via_maileroo(to_list: List[str], subject: str, html_body: str) -> None:
             print(f"邮件发送失败 {addr}: {e}")
 
 
+ENTRIES_JSON = "entries.json"
+
+
+def load_saved_entries() -> List[Dict]:
+    """从 entries.json 加载已保存的历史条目。"""
+    if not os.path.exists(ENTRIES_JSON):
+        return []
+    try:
+        with open(ENTRIES_JSON, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"读取 {ENTRIES_JSON} 失败：{e}")
+        return []
+
+
+def save_entries(entries: List[Dict]) -> None:
+    """将条目列表写入 entries.json 持久化。"""
+    with open(ENTRIES_JSON, "w", encoding="utf-8") as f:
+        json.dump(entries, f, ensure_ascii=False, indent=2)
+
+
+def merge_entries(
+    new_entries: List[Dict],
+    saved_entries: List[Dict],
+    max_count: int = 10,
+) -> List[Dict]:
+    """
+    合并新旧条目 → 按 link 去重 → 按 updated 降序 → 取前 max_count 条。
+    """
+    seen: set = set()
+    merged: List[Dict] = []
+
+    # 新条目优先（同 link 保留新版本）
+    for e in new_entries + saved_entries:
+        key = e.get("link", e.get("title", ""))
+        if key and key not in seen:
+            seen.add(key)
+            merged.append(e)
+
+    # 按 updated 时间降序排序
+    def sort_key(entry: Dict) -> datetime:
+        try:
+            return datetime.fromisoformat(
+                entry["updated"].replace("Z", "+00:00")
+            )
+        except Exception:
+            return datetime.min.replace(tzinfo=timezone.utc)
+
+    merged.sort(key=sort_key, reverse=True)
+    return merged[:max_count]
+
+
 def generate_github_pages_html(entries: List[Dict]) -> str:
     """
     生成 GitHub Pages 用的 index.html，只显示最近 10 条 title/link。
@@ -396,18 +463,20 @@ def main():
     entries = parse_atom_feed_yesterday(xml_text)
     print(f"前一天（UTC）共匹配到 {len(entries)} 条 entry")
 
-    # 始终生成 GitHub Pages index.html（即便 entries 为空也会生成一份简单页面）
-    pages_html = generate_github_pages_html(entries)
+    saved_entries = load_saved_entries()
+    all_entries = merge_entries(entries, saved_entries, max_count=10)
+    save_entries(all_entries)
+    print(f"合并后共 {len(all_entries)} 条条目（最多保留 10 条）")
+
+    pages_html = generate_github_pages_html(all_entries)
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(pages_html)
     print("index.html 已生成（用于 GitHub Pages）")
 
-    # 如果没有前一天的内容，不发邮件（可按需修改为发送“空日报”）
     if not entries:
         print("无前一天内容，跳过邮件发送。")
         return
 
-    # 准备多收件人
     if not MAIL_TO:
         print("MAIL_TO 未配置，无法发送邮件。")
         return
@@ -416,7 +485,6 @@ def main():
         print("MAIL_TO 中没有有效邮箱，跳过邮件发送。")
         return
 
-    # 先尝试带翻译版本，如 Groq 整体出错，再降级为英文版
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
