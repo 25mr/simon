@@ -73,7 +73,7 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
 def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
     """
     使用 Groq API 将 HTML 文本翻译成中文，保持 HTML 结构。
-    失败时最多重试 3 次（含首次），每次重试间隔递增。
+    失败时最多重试 3 次（不含首次），每次重试间隔递增。
     如果全部失败则返回 None。
     """
     if not summary_html or not GROQ_API_KEY:
@@ -103,7 +103,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
         "max_tokens": 4096,
     }
 
-    max_retries = 3
+    max_retries = 4
     for attempt in range(1, max_retries + 1):
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=60)
@@ -116,7 +116,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
         except Exception as e:
             print(f"[Groq] 翻译失败（第 {attempt}/{max_retries} 次）：{e}")
             if attempt < max_retries:
-                wait = 2 * attempt  # 2s, 4s 递增等待
+                wait = 10 * attempt  # 10s 递增等待
                 print(f"[Groq] {wait} 秒后重试…")
                 time.sleep(wait)
 
