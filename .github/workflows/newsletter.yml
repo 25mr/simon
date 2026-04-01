@@ -2,7 +2,7 @@ name: Atom Newsletter Generator
 
 on:
   schedule:
-    - cron: "06 06 * * *"
+    - cron: "16 06 * * *"
   workflow_dispatch:
 
 jobs:
@@ -33,9 +33,10 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
         run: python atom_newsletter.py
 
-      - name: Commit and push index.html to main
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          branch: main
-          commit_message: "Update Atom feed index.html"
-          file_pattern: "index.html"
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html entries.json
+          git diff --cached --quiet || git commit -m "Update index.html & entries.json"
+          git push
