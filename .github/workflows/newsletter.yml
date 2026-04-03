@@ -27,7 +27,7 @@ jobs:
 
       - name: Run Atom Newsletter Script
         env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           MAILEROO_API_KEY: ${{ secrets.MAILEROO_API_KEY }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
