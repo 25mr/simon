@@ -9,7 +9,7 @@ import html
 from typing import List, Dict, Optional
 
 # 从环境变量读取机密配置
-OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 MAILEROO_API_KEY = os.getenv('MAILEROO_API_KEY')
 MAIL_TO = os.getenv('MAIL_TO')
 MAIL_FROM = os.getenv('MAIL_FROM')
@@ -70,21 +70,23 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     return entries
 
 
-def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
+def deepseek_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
     """
-    使用 OpenRouter 翻译 HTML 内容为指定语言。
+    使用 DeepSeek 翻译 HTML 内容为指定语言。
     失败时会自动重试 3 次。
     """
-    if not summary_html or not OPENROUTER_API_KEY:
+    if not summary_html or not DEEPSEEK_API_KEY:
         return None
-
-    url = "https://openrouter.ai/api/v1/chat/completions"
+    
+    url = "https://api.deepseek.com/chat/completions"
+    
     headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
         "Content-Type": "application/json",
     }
+    
     payload = {
-        "model": "arcee-ai/trinity-large-preview:free",
+        "model": "deepseek-chat",
         "messages": [
             {
                 "role": "system",
@@ -97,10 +99,10 @@ def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optiona
         ],
         "temperature": 0.2,
     }
-
-    max_retries = 3          # 总共尝试 3 次
-    base_wait = 15
-
+    
+    max_retries = 3
+    base_wait = 5
+    
     for attempt in range(1, max_retries + 1):
         resp = None
         try:
@@ -108,45 +110,41 @@ def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optiona
             resp.raise_for_status()
             data = resp.json()
             result = data["choices"][0]["message"]["content"].strip()
-
+            
             if attempt > 1:
-                print(f"[OpenRouter] ✅ 第 {attempt} 次重试成功")
+                print(f"[DeepSeek] ✅ 第 {attempt} 次重试成功")
             return result
-
+            
         except requests.exceptions.HTTPError as e:
             status = resp.status_code if resp is not None else 0
-
             # 客户端/认证等错误不重试
             if status in (400, 401, 403, 404):
-                print(f"[OpenRouter] ❌ 不可重试的错误 {status}：{e}")
+                print(f"[DeepSeek] ❌ 不可重试的错误 {status}：{e}")
                 try:
-                    print(f"[OpenRouter] 响应: {resp.text[:500]}")
+                    print(f"[DeepSeek] 响应: {resp.text[:500]}")
                 except Exception:
                     pass
                 return None
-
-            print(f"[OpenRouter] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
-
+            print(f"[DeepSeek] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
+            
         except requests.exceptions.Timeout:
-            print(f"[OpenRouter] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
-
+            print(f"[DeepSeek] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
         except requests.exceptions.ConnectionError as e:
-            print(f"[OpenRouter] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
-
+            print(f"[DeepSeek] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
         except Exception as e:
-            print(f"[OpenRouter] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
-
+            print(f"[DeepSeek] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
+        
         # 最后一次尝试失败后不再等待
         if attempt >= max_retries:
             break
-
+        
         # 指数退避等待
         wait = base_wait * (2 ** (attempt - 1))
-        wait = min(wait, 240)  # 最大等待 4 分钟
-        print(f"[OpenRouter] ⏳ 等待 {wait}s 后重试…")
+        wait = min(wait, 180)
+        print(f"[DeepSeek] ⏳ 等待 {wait}s 后重试…")
         time.sleep(wait)
-
-    print("[OpenRouter] 🚫 已达最大重试次数（3次），翻译放弃")
+    
+    print("[DeepSeek] 🚫 已达最大重试次数（3次），翻译放弃")
     return None
 
 
@@ -286,7 +284,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             )
 
             if with_translation:
-                zh_html = openrouter_translate_html(summary_html)
+                zh_html = deepseek_translate_html(summary_html)
                 if zh_html:
                     zh_html = _clamp_images(zh_html)
                     parts.append(
