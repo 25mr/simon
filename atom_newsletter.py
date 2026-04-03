@@ -9,7 +9,7 @@ import html
 from typing import List, Dict, Optional
 
 # 从环境变量读取机密配置
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 MAILEROO_API_KEY = os.getenv('MAILEROO_API_KEY')
 MAIL_TO = os.getenv('MAIL_TO')
 MAIL_FROM = os.getenv('MAIL_FROM')
@@ -72,7 +72,7 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
 
 def _extract_retry_after(resp: requests.Response) -> Optional[float]:
     """
-    从 Groq 响应中提取推荐等待时间（秒）
+    从 OpenRouter 响应中提取推荐等待时间（秒）
     优先级：Header > Body JSON > Body 文本
     """
     # ① 标准 Retry-After 头
@@ -84,10 +84,8 @@ def _extract_retry_after(resp: requests.Response) -> Optional[float]:
             pass
 
     # ② 从 JSON body 中提取
-    #    Groq 常见格式: "Please try again in 3.5s" / "try again in 1m30s"
     try:
         body = resp.json()
-        # 可能在 error.message 里
         msg = ""
         if isinstance(body, dict):
             err = body.get("error", {})
@@ -101,8 +99,8 @@ def _extract_retry_after(resp: requests.Response) -> Optional[float]:
         # 匹配 "try again in 1m30.5s" / "try again in 42s" / "try again in 2.5s"
         match = re.search(
             r'try again in\s+'
-            r'(?:(\d+)m)?'        # 可选的分钟
-            r'\s*(?:(\d+(?:\.\d+)?)s)?',  # 可选的秒
+            r'(?:(\d+)m)?'
+            r'\s*(?:(\d+(?:\.\d+)?)s)?',
             msg, re.IGNORECASE
         )
         if match:
@@ -115,17 +113,17 @@ def _extract_retry_after(resp: requests.Response) -> Optional[float]:
 
     return None
 
-def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
-    if not summary_html or not GROQ_API_KEY:
+def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
+    if not summary_html or not OPENROUTER_API_KEY:
         return None
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
+    url = "https://openrouter.ai/api/v1/chat/completions"
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "groq/compound",
+        "model": "arcee-ai/trinity-large-preview:free",
         "messages": [
             {
                 "role": "system",
@@ -137,11 +135,10 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
             {"role": "user", "content": summary_html},
         ],
         "temperature": 0.2,
-        "max_tokens": 8000,
     }
 
     max_retries = 5
-    base_wait = 15  # 基础等待秒数
+    base_wait = 15
 
     for attempt in range(1, max_retries + 1):
         resp = None
@@ -153,69 +150,64 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
             result = data["choices"][0]["message"]["content"].strip()
 
             if attempt > 1:
-                print(f"[Groq] ✅ 第 {attempt} 次重试成功")
+                print(f"[OpenRouter] ✅ 第 {attempt} 次重试成功")
             return result
 
         except requests.exceptions.HTTPError as e:
             status = resp.status_code if resp is not None else 0
 
-            # ---------- 不可重试的错误，立即退出 ----------
             if status in (400, 401, 403, 404):
-                print(f"[Groq] ❌ 不可重试的错误 {status}：{e}")
+                print(f"[OpenRouter] ❌ 不可重试的错误 {status}：{e}")
                 try:
-                    print(f"[Groq]    响应: {resp.text[:500]}")
+                    print(f"[OpenRouter]    响应: {resp.text[:500]}")
                 except Exception:
                     pass
                 return None
 
-            # ---------- 可重试：429 限流 / 5xx 服务端错误 ----------
-            print(f"[Groq] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
+            print(f"[OpenRouter] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
 
             if attempt >= max_retries:
                 break
 
-            # 尝试从响应提取等待时间
             wait = None
             if resp is not None:
                 wait = _extract_retry_after(resp)
                 if wait:
-                    wait += 2  # 加 2 秒余量
-                    print(f"[Groq]    服务器建议等待 {wait:.1f}s")
+                    wait += 2
+                    print(f"[OpenRouter]    服务器建议等待 {wait:.1f}s")
 
-            # 如果没提取到，使用指数退避
             if not wait:
-                wait = base_wait * (2 ** (attempt - 1))  # 15, 30, 60, 120
-                print(f"[Groq]    指数退避等待 {wait}s")
+                wait = base_wait * (2 ** (attempt - 1))
+                print(f"[OpenRouter]    指数退避等待 {wait}s")
 
-            # 设上限，避免等太久
             wait = min(wait, 300)
-            print(f"[Groq]    ⏳ 等待 {wait:.1f}s 后重试…")
+            print(f"[OpenRouter]    ⏳ 等待 {wait:.1f}s 后重试…")
             time.sleep(wait)
 
         except requests.exceptions.Timeout:
-            print(f"[Groq] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
+            print(f"[OpenRouter] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
             if attempt >= max_retries:
                 break
             wait = base_wait * attempt
-            print(f"[Groq]    ⏳ 等待 {wait}s 后重试…")
+            print(f"[OpenRouter]    ⏳ 等待 {wait}s 后重试…")
             time.sleep(wait)
 
         except requests.exceptions.ConnectionError as e:
-            print(f"[Groq] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
+            print(f"[OpenRouter] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
             if attempt >= max_retries:
                 break
             wait = base_wait * attempt
-            print(f"[Groq]    ⏳ 等待 {wait}s 后重试…")
+            print(f"[OpenRouter]    ⏳ 等待 {wait}s 后重试…")
             time.sleep(wait)
 
         except Exception as e:
-            print(f"[Groq] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
+            print(f"[OpenRouter] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
             if attempt >= max_retries:
                 break
             wait = base_wait * attempt
             time.sleep(wait)
 
-    print("[Groq] 🚫 已达最大重试次数，翻译放弃")
+    print("[OpenRouter] 🚫 已达最大重试次数，翻译放弃")
     return None
 
 
@@ -355,7 +347,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             )
 
             if with_translation:
-                zh_html = groq_translate_html(summary_html)
+                zh_html = openrouter_translate_html(summary_html)
                 if zh_html:
                     zh_html = _clamp_images(zh_html)
                     parts.append(
