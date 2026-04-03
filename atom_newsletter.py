@@ -70,82 +70,149 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     return entries
 
 
-def deepseek_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
+# 不可重试的状态码
+_NO_RETRY = {400, 401, 403, 404}
+
+
+def deepseek_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[str]:
     """
     使用 DeepSeek 翻译 HTML 内容为指定语言。
-    失败时会自动重试 3 次。
+    - 长文本自动分段翻译，避免截断
+    - 失败自动重试 3 次（指数退避）
     """
     if not summary_html or not DEEPSEEK_API_KEY:
         return None
-    
-    url = "https://api.deepseek.com/chat/completions"
-    
-    headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    
+
+    # ── 短文本：直接翻译 ──
+    if len(summary_html) <= 4000:
+        return _call_deepseek(summary_html, to_lang)
+
+    # ── 长文本：分段翻译 ──
+    chunks = _split_html(summary_html, max_chars=3000)
+    print(f"[DeepSeek] 📄 长文本拆分为 {len(chunks)} 段")
+
+    results: list[str] = []
+    for i, chunk in enumerate(chunks, 1):
+        print(f"[DeepSeek] 翻译第 {i}/{len(chunks)} 段…")
+        result = _call_deepseek(chunk, to_lang)
+        if result is None:
+            return None                    # 任何一段失败 → 整体失败
+        results.append(result)
+
+    return "\n".join(results)
+
+
+# ─────────────────────────────────────────
+#  核心 API 调用（含重试）
+# ─────────────────────────────────────────
+def _call_deepseek(
+    html: str,
+    to_lang: str,
+    max_retries: int = 3,
+    max_tokens: int = 8192,          # ← 关键：防止输出被截断
+) -> Optional[str]:
+
     payload = {
         "model": "deepseek-chat",
         "messages": [
             {
                 "role": "system",
                 "content": (
-                    f"你是一个专业的翻译助手，请将下面的英文 HTML 内容"
-                    f"准确翻译成{to_lang}，必须保持 HTML 标签结构不变。"
+                    f"你是专业翻译助手。将以下英文 HTML 翻译成{to_lang}，"
+                    "只翻译文本，保持所有 HTML 标签和属性原样不动。"
+                    "不要添加任何解释或 markdown 代码块标记。"
                 ),
             },
-            {"role": "user", "content": summary_html},
+            {"role": "user", "content": html},
         ],
         "temperature": 0.2,
+        "max_tokens": max_tokens,     # ← 关键
     }
-    
-    max_retries = 3
-    base_wait = 5
-    
+
+    headers = {
+        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
     for attempt in range(1, max_retries + 1):
-        resp = None
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=120)
+            resp = requests.post(
+                "https://api.deepseek.com/chat/completions",
+                headers=headers, json=payload, timeout=120,
+            )
+            # 不可重试的错误，立即退出
+            if resp.status_code in _NO_RETRY:
+                print(f"[DeepSeek] ❌ HTTP {resp.status_code}，不可重试：{resp.text[:300]}")
+                return None
+
             resp.raise_for_status()
             data = resp.json()
-            result = data["choices"][0]["message"]["content"].strip()
-            
-            if attempt > 1:
-                print(f"[DeepSeek] ✅ 第 {attempt} 次重试成功")
-            return result
-            
-        except requests.exceptions.HTTPError as e:
-            status = resp.status_code if resp is not None else 0
-            # 客户端/认证等错误不重试
-            if status in (400, 401, 403, 404):
-                print(f"[DeepSeek] ❌ 不可重试的错误 {status}：{e}")
-                try:
-                    print(f"[DeepSeek] 响应: {resp.text[:500]}")
-                except Exception:
-                    pass
-                return None
-            print(f"[DeepSeek] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
-            
-        except requests.exceptions.Timeout:
-            print(f"[DeepSeek] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
-        except requests.exceptions.ConnectionError as e:
-            print(f"[DeepSeek] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
+            choice = data["choices"][0]
+
+            # ── 检测截断 ──
+            if choice.get("finish_reason") == "length":
+                print("[DeepSeek] ⚠️ 输出被截断（finish_reason=length），"
+                      "建议减小分段大小或增大 max_tokens")
+
+            return choice["message"]["content"].strip()
+
+        except (requests.exceptions.Timeout,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.HTTPError) as e:
+            tag = {
+                requests.exceptions.Timeout: "⏰ 超时",
+                requests.exceptions.ConnectionError: "🔌 连接错误",
+            }.get(type(e), "⚠️ HTTP 错误")
+            print(f"[DeepSeek] {tag}（{attempt}/{max_retries}）：{e}")
+
         except Exception as e:
-            print(f"[DeepSeek] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
-        
-        # 最后一次尝试失败后不再等待
-        if attempt >= max_retries:
-            break
-        
-        # 指数退避等待
-        wait = base_wait * (2 ** (attempt - 1))
-        wait = min(wait, 180)
-        print(f"[DeepSeek] ⏳ 等待 {wait}s 后重试…")
-        time.sleep(wait)
-    
-    print("[DeepSeek] 🚫 已达最大重试次数（3次），翻译放弃")
+            print(f"[DeepSeek] ❌ 未知错误：{type(e).__name__}: {e}")
+            return None                    # 未知异常不重试
+
+        if attempt < max_retries:
+            wait = min(5 * 2 ** (attempt - 1), 180)
+            print(f"[DeepSeek] ⏳ {wait}s 后重试…")
+            time.sleep(wait)
+
+    print("[DeepSeek] 🚫 重试耗尽，翻译放弃")
     return None
+
+
+# ─────────────────────────────────────────
+#  HTML 智能分段
+# ─────────────────────────────────────────
+_BLOCK_RE = re.compile(
+    r"(<(?:p|div|h[1-6]|ul|ol|li|tr|blockquote|section|article|figure)"
+    r"[\s>].*?</(?:p|div|h[1-6]|ul|ol|li|tr|blockquote|section|article|figure)>)",
+    re.DOTALL | re.IGNORECASE,
+)
+
+def _split_html(html: str, max_chars: int = 3000) -> List[str]:
+    """
+    按块级 HTML 标签边界拆分，尽量让每段 ≤ max_chars。
+    保证不会从标签中间切断。
+    """
+    parts = _BLOCK_RE.split(html)           # 交替：间隔文本 / 匹配标签
+    chunks: list[str] = []
+    buf = ""
+
+    for part in parts:
+        if not part:
+            continue
+        # 单个 part 就超长 → 单独成段（总比截断好）
+        if len(part) > max_chars and not buf:
+            chunks.append(part)
+            continue
+        if len(buf) + len(part) > max_chars and buf:
+            chunks.append(buf)
+            buf = part
+        else:
+            buf += part
+
+    if buf:
+        chunks.append(buf)
+
+    return chunks or [html]
 
 
 def _clamp_images(html_content: str) -> str:
