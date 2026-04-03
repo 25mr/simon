@@ -70,12 +70,52 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     return entries
 
 
+def _extract_retry_after(resp: requests.Response) -> Optional[float]:
+    """
+    从 Groq 响应中提取推荐等待时间（秒）
+    优先级：Header > Body JSON > Body 文本
+    """
+    # ① 标准 Retry-After 头
+    retry_after = resp.headers.get("Retry-After") or resp.headers.get("retry-after")
+    if retry_after:
+        try:
+            return float(retry_after)
+        except ValueError:
+            pass
+
+    # ② 从 JSON body 中提取
+    #    Groq 常见格式: "Please try again in 3.5s" / "try again in 1m30s"
+    try:
+        body = resp.json()
+        # 可能在 error.message 里
+        msg = ""
+        if isinstance(body, dict):
+            err = body.get("error", {})
+            if isinstance(err, dict):
+                msg = err.get("message", "")
+            elif isinstance(err, str):
+                msg = err
+        if not msg:
+            msg = resp.text
+
+        # 匹配 "try again in 1m30.5s" / "try again in 42s" / "try again in 2.5s"
+        match = re.search(
+            r'try again in\s+'
+            r'(?:(\d+)m)?'        # 可选的分钟
+            r'\s*(?:(\d+(?:\.\d+)?)s)?',  # 可选的秒
+            msg, re.IGNORECASE
+        )
+        if match:
+            minutes = float(match.group(1) or 0)
+            seconds = float(match.group(2) or 0)
+            return minutes * 60 + seconds
+
+    except Exception:
+        pass
+
+    return None
+
 def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
-    """
-    使用 Groq API 将 HTML 文本翻译成中文，保持 HTML 结构。
-    失败时最多重试 3 次（不含首次），每次重试间隔递增。
-    如果全部失败则返回 None。
-    """
     if not summary_html or not GROQ_API_KEY:
         return None
 
@@ -85,7 +125,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
         "Content-Type": "application/json",
     }
     payload = {
-        "model": "groq/compound-mini",
+        "model": "groq/compound",
         "messages": [
             {
                 "role": "system",
@@ -94,33 +134,88 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
                     f"准确翻译成{to_lang}，必须保持 HTML 标签结构不变。"
                 ),
             },
-            {
-                "role": "user",
-                "content": summary_html,
-            },
+            {"role": "user", "content": summary_html},
         ],
         "temperature": 0.2,
         "max_tokens": 4096,
     }
 
-    max_retries = 4
+    max_retries = 5
+    base_wait = 15  # 基础等待秒数
+
     for attempt in range(1, max_retries + 1):
+        resp = None
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=100)
+            resp = requests.post(url, headers=headers, json=payload, timeout=120)
             resp.raise_for_status()
+
             data = resp.json()
             result = data["choices"][0]["message"]["content"].strip()
-            if attempt > 1:
-                print(f"[Groq] 第 {attempt} 次重试成功")
-            return result
-        except Exception as e:
-            print(f"[Groq] 翻译失败（第 {attempt}/{max_retries} 次）：{e}")
-            if attempt < max_retries:
-                wait = 10 * attempt  # 10s 递增等待
-                print(f"[Groq] {wait} 秒后重试…")
-                time.sleep(wait)
 
-    print("[Groq] 已达最大重试次数，翻译放弃")
+            if attempt > 1:
+                print(f"[Groq] ✅ 第 {attempt} 次重试成功")
+            return result
+
+        except requests.exceptions.HTTPError as e:
+            status = resp.status_code if resp is not None else 0
+
+            # ---------- 不可重试的错误，立即退出 ----------
+            if status in (400, 401, 403, 404):
+                print(f"[Groq] ❌ 不可重试的错误 {status}：{e}")
+                try:
+                    print(f"[Groq]    响应: {resp.text[:500]}")
+                except Exception:
+                    pass
+                return None
+
+            # ---------- 可重试：429 限流 / 5xx 服务端错误 ----------
+            print(f"[Groq] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
+
+            if attempt >= max_retries:
+                break
+
+            # 尝试从响应提取等待时间
+            wait = None
+            if resp is not None:
+                wait = _extract_retry_after(resp)
+                if wait:
+                    wait += 2  # 加 2 秒余量
+                    print(f"[Groq]    服务器建议等待 {wait:.1f}s")
+
+            # 如果没提取到，使用指数退避
+            if not wait:
+                wait = base_wait * (2 ** (attempt - 1))  # 15, 30, 60, 120
+                print(f"[Groq]    指数退避等待 {wait}s")
+
+            # 设上限，避免等太久
+            wait = min(wait, 300)
+            print(f"[Groq]    ⏳ 等待 {wait:.1f}s 后重试…")
+            time.sleep(wait)
+
+        except requests.exceptions.Timeout:
+            print(f"[Groq] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
+            if attempt >= max_retries:
+                break
+            wait = base_wait * attempt
+            print(f"[Groq]    ⏳ 等待 {wait}s 后重试…")
+            time.sleep(wait)
+
+        except requests.exceptions.ConnectionError as e:
+            print(f"[Groq] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
+            if attempt >= max_retries:
+                break
+            wait = base_wait * attempt
+            print(f"[Groq]    ⏳ 等待 {wait}s 后重试…")
+            time.sleep(wait)
+
+        except Exception as e:
+            print(f"[Groq] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
+            if attempt >= max_retries:
+                break
+            wait = base_wait * attempt
+            time.sleep(wait)
+
+    print("[Groq] 🚫 已达最大重试次数，翻译放弃")
     return None
 
 
@@ -420,7 +515,7 @@ def generate_github_pages_html(entries: List[Dict]) -> str:
     parts.append("<body>")
     parts.append('<div class="header">')
     parts.append("<h1>Simon Willison&#39;s Atom Feed</h1>")
-    parts.append("<p>Latest 10 entries (Beijing Time)</p>")
+    parts.append("<p>Latest 10 entries</p>")
     parts.append("</div>")
     parts.append('<div class="wrap">')
 
@@ -444,7 +539,7 @@ def generate_github_pages_html(entries: List[Dict]) -> str:
             parts.append("</div>")
 
     parts.append(
-        f'<div class="footer">Data updated at {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</div>'
+        f'<div class="footer">Data updated at {now_bj.strftime("%Y-%m-%d %H:%M")} +08:00</div>'
     )
     parts.append("</div>")
     parts.append("</body>")
