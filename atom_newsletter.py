@@ -70,50 +70,11 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     return entries
 
 
-def _extract_retry_after(resp: requests.Response) -> Optional[float]:
-    """
-    从 OpenRouter 响应中提取推荐等待时间（秒）
-    优先级：Header > Body JSON > Body 文本
-    """
-    # ① 标准 Retry-After 头
-    retry_after = resp.headers.get("Retry-After") or resp.headers.get("retry-after")
-    if retry_after:
-        try:
-            return float(retry_after)
-        except ValueError:
-            pass
-
-    # ② 从 JSON body 中提取
-    try:
-        body = resp.json()
-        msg = ""
-        if isinstance(body, dict):
-            err = body.get("error", {})
-            if isinstance(err, dict):
-                msg = err.get("message", "")
-            elif isinstance(err, str):
-                msg = err
-        if not msg:
-            msg = resp.text
-
-        # 匹配 "try again in 1m30.5s" / "try again in 42s" / "try again in 2.5s"
-        match = re.search(
-            r'try again in\s+'
-            r'(?:(\d+)m)?'
-            r'\s*(?:(\d+(?:\.\d+)?)s)?',
-            msg, re.IGNORECASE
-        )
-        if match:
-            minutes = float(match.group(1) or 0)
-            seconds = float(match.group(2) or 0)
-            return minutes * 60 + seconds
-
-    except Exception:
-        pass
-
-    return None
-
 def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]:
+    """
+    使用 OpenRouter 翻译 HTML 内容为指定语言。
+    失败时会自动重试 3 次。
+    """
     if not summary_html or not OPENROUTER_API_KEY:
         return None
 
@@ -137,7 +98,7 @@ def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optiona
         "temperature": 0.2,
     }
 
-    max_retries = 5
+    max_retries = 3          # 总共尝试 3 次
     base_wait = 15
 
     for attempt in range(1, max_retries + 1):
@@ -145,7 +106,6 @@ def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optiona
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=120)
             resp.raise_for_status()
-
             data = resp.json()
             result = data["choices"][0]["message"]["content"].strip()
 
@@ -156,58 +116,37 @@ def openrouter_translate_html(summary_html: str, to_lang: str = 'zh') -> Optiona
         except requests.exceptions.HTTPError as e:
             status = resp.status_code if resp is not None else 0
 
+            # 客户端/认证等错误不重试
             if status in (400, 401, 403, 404):
                 print(f"[OpenRouter] ❌ 不可重试的错误 {status}：{e}")
                 try:
-                    print(f"[OpenRouter]    响应: {resp.text[:500]}")
+                    print(f"[OpenRouter] 响应: {resp.text[:500]}")
                 except Exception:
                     pass
                 return None
 
             print(f"[OpenRouter] ⚠️ HTTP {status}（第 {attempt}/{max_retries} 次）：{e}")
 
-            if attempt >= max_retries:
-                break
-
-            wait = None
-            if resp is not None:
-                wait = _extract_retry_after(resp)
-                if wait:
-                    wait += 2
-                    print(f"[OpenRouter]    服务器建议等待 {wait:.1f}s")
-
-            if not wait:
-                wait = base_wait * (2 ** (attempt - 1))
-                print(f"[OpenRouter]    指数退避等待 {wait}s")
-
-            wait = min(wait, 300)
-            print(f"[OpenRouter]    ⏳ 等待 {wait:.1f}s 后重试…")
-            time.sleep(wait)
-
         except requests.exceptions.Timeout:
             print(f"[OpenRouter] ⏰ 请求超时（第 {attempt}/{max_retries} 次）")
-            if attempt >= max_retries:
-                break
-            wait = base_wait * attempt
-            print(f"[OpenRouter]    ⏳ 等待 {wait}s 后重试…")
-            time.sleep(wait)
 
         except requests.exceptions.ConnectionError as e:
             print(f"[OpenRouter] 🔌 连接错误（第 {attempt}/{max_retries} 次）：{e}")
-            if attempt >= max_retries:
-                break
-            wait = base_wait * attempt
-            print(f"[OpenRouter]    ⏳ 等待 {wait}s 后重试…")
-            time.sleep(wait)
 
         except Exception as e:
             print(f"[OpenRouter] ❌ 未知错误（第 {attempt}/{max_retries} 次）：{type(e).__name__}: {e}")
-            if attempt >= max_retries:
-                break
-            wait = base_wait * attempt
-            time.sleep(wait)
 
-    print("[OpenRouter] 🚫 已达最大重试次数，翻译放弃")
+        # 最后一次尝试失败后不再等待
+        if attempt >= max_retries:
+            break
+
+        # 指数退避等待
+        wait = base_wait * (2 ** (attempt - 1))
+        wait = min(wait, 240)  # 最大等待 4 分钟
+        print(f"[OpenRouter] ⏳ 等待 {wait}s 后重试…")
+        time.sleep(wait)
+
+    print("[OpenRouter] 🚫 已达最大重试次数（3次），翻译放弃")
     return None
 
 
