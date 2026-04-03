@@ -137,7 +137,7 @@ def groq_translate_html(summary_html: str, to_lang: str = 'zh') -> Optional[str]
             {"role": "user", "content": summary_html},
         ],
         "temperature": 0.2,
-        "max_tokens": 4096,
+        "max_tokens": 8000,
     }
 
     max_retries = 5
