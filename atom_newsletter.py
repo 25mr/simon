@@ -84,7 +84,7 @@ def deepseek_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[
         return None
 
     # ── 短文本：直接翻译 ──
-    if len(summary_html) <= 4000:
+    if len(summary_html) <= 6000:
         return _call_deepseek(summary_html, to_lang)
 
     # ── 长文本：分段翻译 ──
@@ -96,7 +96,7 @@ def deepseek_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[
         print(f"[DeepSeek] 翻译第 {i}/{len(chunks)} 段…")
         result = _call_deepseek(chunk, to_lang)
         if result is None:
-            return None                    # 任何一段失败 → 整体失败
+            return None
         results.append(result)
 
     return "\n".join(results)
@@ -109,7 +109,7 @@ def _call_deepseek(
     html: str,
     to_lang: str,
     max_retries: int = 3,
-    max_tokens: int = 8192,          # ← 关键：防止输出被截断
+    max_tokens: int = 8000,
 ) -> Optional[str]:
 
     payload = {
@@ -125,7 +125,7 @@ def _call_deepseek(
             },
             {"role": "user", "content": html},
         ],
-        "temperature": 0.2,
+        "temperature": 1.3,
         "max_tokens": max_tokens,     # ← 关键
     }
 
