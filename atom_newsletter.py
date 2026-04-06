@@ -298,7 +298,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:20px 16px;text-align:center;color:#FFFFFF;">'
         f'<h1 style="margin:0;font-size:30px;line-height:1.4;">Simon Willison\'s atom</h1>'
-        f'<p style="margin:8px 0 0 0;font-size:14px;color:#CBD5E1;">Generated on {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
+        f'<p style="margin:8px 0 0 0;font-size:14px;color:#CBD5E1;">Updated at {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
         "</div>"
     )
 
@@ -339,13 +339,13 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                 f'<h2 style="margin:0 0 6px 0;font-size:18px;color:#0F172A;line-height:1.4;">'
                 f'<a href="{link_safe}" style="color:#1D4ED8;text-decoration:none;">{title_safe}</a>'
                 "</h2>"
-                f'<p style="margin:0 0 12px 0;font-size:12px;color:#64748B;">Published: {updated_display}</p>'
+                f'<p style="margin:0 0 12px 0;font-size:12px;color:#64748B;">🕖Published: {updated_display}</p>'
             )
 
             # ▼ 内容区也加 overflow:hidden
             parts.append(
                 '<div style="margin-top:10px;font-size:14px;line-height:1.6;color:#111827;overflow:hidden;">'
-                '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">English Original:</h3>'
+                '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">📄English:</h3>'
                 f'{summary_html}'
                 "</div>"
             )
@@ -356,7 +356,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
                     zh_html = _clamp_images(zh_html)
                     parts.append(
                         '<div style="margin-top:12px;font-size:14px;line-height:1.6;color:#374151;overflow:hidden;">'
-                        '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">中文翻译:</h3>'
+                        '<h3 style="margin:0 0 6px 0;font-size:14px;color:#0F172A;">🤖中文翻译:</h3>'
                         f"{zh_html}"
                         "</div>"
                     )
