@@ -1,5 +1,40 @@
 [
   {
+    "title": "Google AI Edge Gallery",
+    "link": "https://simonwillison.net/2026/Apr/6/google-ai-edge-gallery/#atom-everything",
+    "updated": "2026-04-06T05:18:26+00:00",
+    "summary": "<p><strong><a href=\"https://apps.apple.com/nl/app/google-ai-edge-gallery/id6749645337\">Google AI Edge Gallery</a></strong></p>\nTerrible name, really great app: this is Google's official app for running their Gemma 4 models (the E2B and E4B sizes, plus some members of the Gemma 3 family) directly on your iPhone.</p>\n<p>It works <em>really</em> well. The E2B model is a 2.54GB download and is both fast and genuinely useful.</p>\n<p>The app also provides \"ask questions about images\" and audio transcription (up to 30s) with the two small Gemma 4 models, and has an interesting \"skills\" demo which demonstrates tool calling against eight different interactive widgets, each implemented as an HTML page (though sadly the source code is not visible): interactive-map, kitchen-adventure, calculate-hash, text-spinner, mood-tracker, mnemonic-password, query-wikipedia, and qr-code.</p>\n<p><img src=\"https://static.simonwillison.net/static/2026/gemini-agent-skills.jpg\" alt=\"Screenshot of an &quot;Agent Skills&quot; chat interface using the Gemma-4-E2B-it model. The user prompt reads &quot;Show me the Castro Theatre on a map.&quot; The model response, labeled &quot;Model on GPU,&quot; shows it &quot;Called JS skill &#39;interactive-map/index.html&#39;&quot; and displays an embedded Google Map centered on a red pin at The Castro Theatre in San Francisco, with nearby landmarks visible including Starbelly, Cliff&#39;s Variety, Blind Butcher, GLBT Historical Society Museum, and Fable. An &quot;Open in Maps&quot; link and &quot;View in full screen&quot; button are shown. Below the map, the model states &quot;The interactive map view for the Castro Theatre has been shown.&quot; with a response time of 2.4 s. A text input field with &quot;Type prompt...&quot; placeholder, a &quot;+&quot; button, and a &quot;Skills&quot; button appear at the bottom.\" style=\"max-width: min(400px, 100%); margin: 0 auto; display: block;\"></p>\n<p>(That demo did freeze the app when I tried to add a follow-up prompt though.)</p>\n<p>This is the first time I've seen a local model vendor release an official app for trying out their models on in iPhone. Sadly it's missing permanent logs - conversations with this app are ephemeral.\n\n    <p><small></small>Via <a href=\"https://news.ycombinator.com/item?id=47652561\">Hacker News</a></small></p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "datasette-ports 0.2",
+    "link": "https://simonwillison.net/2026/Apr/6/datasette-ports-2/#atom-everything",
+    "updated": "2026-04-06T03:25:43+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/datasette/datasette-ports/releases/tag/0.2\">datasette-ports 0.2</a></p>\n    <blockquote>\n<ul>\n<li>No longer requires Datasette - running <code>uvx datasette-ports</code> now works as well.</li>\n<li>Installing it as a Datasette plugin continues to provide the <code>datasette ports</code> command.</li>\n</ul>\n</blockquote>",
+    "summary_type": "html"
+  },
+  {
+    "title": "scan-for-secrets 0.3",
+    "link": "https://simonwillison.net/2026/Apr/6/scan-for-secrets/#atom-everything",
+    "updated": "2026-04-06T02:59:28+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/scan-for-secrets/releases/tag/0.3\">scan-for-secrets 0.3</a></p>\n    <blockquote>\n<ul>\n<li>New <code>-r/--redact</code> option which shows the list of matches, asks for confirmation and then replaces every match with <code>REDACTED</code>, taking escaping rules into account.</li>\n<li>New Python function <code>redact_file(file_path: str | Path, secrets: list[str], replacement: str = \"REDACTED\") -&gt; int</code>.</li>\n</ul>\n</blockquote>",
+    "summary_type": "html"
+  },
+  {
+    "title": "Cleanup Claude Code Paste",
+    "link": "https://simonwillison.net/2026/Apr/6/cleanup-claude-code-paste/#atom-everything",
+    "updated": "2026-04-06T02:55:23+00:00",
+    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/cleanup-claude-code-paste\">Cleanup Claude Code Paste</a></p>\n    <p>Super-niche tool this. I sometimes copy prompts out of the Claude Code terminal app and they come out with a bunch of weird additional whitespace. This tool cleans that up.</p>\n<p><img alt=\"Screenshot of a web tool titled &quot;Cleanup Claude Code Paste&quot; with the subtitle &quot;Paste terminal output to remove the ❯ prompt, fix wrapped-line whitespace, and join lines into clean text.&quot; An input textarea contains pasted terminal output starting with &quot;❯ Add a -r/--redact option which asks for user approval (after telling it how many replacements will happen and in which files and which lines – standard output basically) and then rewrites the files in that folder to replace all matched secrets with REDACTED. Run tests with 'uv run pytest' and use red/green TDD&quot;. Below is a &quot;Cleaned output:&quot; section showing the same text with the ❯ prompt removed and whitespace cleaned up. A blue &quot;Copy to clipboard&quot; button appears at the bottom.\" src=\"https://static.simonwillison.net/static/2026/claude-code-cleanup.jpg\" /></p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "datasette-ports 0.1",
+    "link": "https://simonwillison.net/2026/Apr/6/datasette-ports/#atom-everything",
+    "updated": "2026-04-06T00:23:55+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/datasette/datasette-ports/releases/tag/0.1\">datasette-ports 0.1</a></p>\n    <p>Another <a href=\"https://gisthost.github.io/?f92d8a6bdadee1c77972b5e51954144e\">example</a> of README-driven development, this time solving a problem that might be unique to me.</p>\n<p>I often find myself running a bunch of different <a href=\"https://datasette.io\">Datasette</a> instances with different databases and different in-development plugins, spreads across dozens of different terminal windows - enough that I frequently lose them!</p>\n<p>Now I can run this:</p>\n<pre><code>datasette install datasette-ports\ndatasette ports\n</code></pre>\n<p>And get a list of every running instance that looks something like this:</p>\n<pre><code>http://127.0.0.1:8333/ - v1.0a26\n  Databases: data\n  Plugins: datasette-enrichments, datasette-enrichments-llm, datasette-llm, datasette-secrets\nhttp://127.0.0.1:8001/ - v1.0a26\n  Databases: creatures\n  Plugins: datasette-extract, datasette-llm, datasette-secrets\nhttp://127.0.0.1:8900/ - v0.65.2\n  Databases: logs\n</code></pre>",
+    "summary_type": "html"
+  },
+  {
     "title": "Eight years of wanting, three months of building with AI",
     "link": "https://simonwillison.net/2026/Apr/5/building-with-ai/#atom-everything",
     "updated": "2026-04-05T23:54:18+00:00",
@@ -32,41 +67,6 @@
     "link": "https://simonwillison.net/2026/Apr/5/scan-for-secrets-2/#atom-everything",
     "updated": "2026-04-05T03:39:33+00:00",
     "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/scan-for-secrets/releases/tag/0.1.1\">scan-for-secrets 0.1.1</a></p>\n    <blockquote>\n<ul>\n<li>Added documentation of the escaping schemes that are also scanned.</li>\n<li>Removed unnecessary <code>repr</code> escaping scheme, which was already covered by <code>json</code>.</li>\n</ul>\n</blockquote>",
-    "summary_type": "html"
-  },
-  {
-    "title": "scan-for-secrets 0.1",
-    "link": "https://simonwillison.net/2026/Apr/5/scan-for-secrets-3/#atom-everything",
-    "updated": "2026-04-05T03:27:13+00:00",
-    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/scan-for-secrets/releases/tag/0.1\">scan-for-secrets 0.1</a></p>\n    <p>I like publishing transcripts of local Claude Code sessions using my <a href=\"https://github.com/simonw/claude-code-transcripts\">claude-code-transcripts</a> tool but I'm often paranoid that one of my API keys or similar secrets might inadvertently be revealed in the detailed log files.</p>\n<p>I built this new Python scanning tool to help reassure me. You can feed it secrets and have it scan for them in a specified directory:</p>\n<pre><code>uvx scan-for-secrets $OPENAI_API_KEY -d logs-to-publish/\n</code></pre>\n<p>If you leave off the <code>-d</code> it defaults to the current directory.</p>\n<p>It doesn't just scan for the literal secrets - it also scans for common encodings of those secrets e.g. backslash or JSON escaping, <a href=\"https://github.com/simonw/scan-for-secrets/blob/main/README.md#escaping-schemes\">as described in the README</a>.</p>\n<p>If you have a set of secrets you always want to protect you can list commands to echo them in a <code>~/.scan-for-secrets.conf.sh</code> file. Mine looks like this:</p>\n<pre><code>llm keys get openai\nllm keys get anthropic\nllm keys get gemini\nllm keys get mistral\nawk -F= '/aws_secret_access_key/{print $2}' ~/.aws/credentials | xargs\n</code></pre>\n<p>I built this tool using README-driven-development: I carefully constructed the README describing exactly how the tool should work, then <a href=\"https://gisthost.github.io/?d4b1a398bf3b6b14aade923dea69a1ac/index.html\">dumped it into Claude Code</a> and told it to build the actual tool (using <a href=\"https://simonwillison.net/guides/agentic-engineering-patterns/red-green-tdd/\">red/green TDD</a>, naturally.)</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "research-llm-apis 2026-04-04",
-    "link": "https://simonwillison.net/2026/Apr/5/research-llm-apis/#atom-everything",
-    "updated": "2026-04-05T00:32:11+00:00",
-    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/research-llm-apis/releases/tag/2026-04-04\">research-llm-apis 2026-04-04</a></p>\n    <p>I'm working on a <a href=\"https://github.com/simonw/llm/issues/1314\">major change</a> to my LLM Python library and CLI tool. LLM provides an abstraction layer over hundreds of different LLMs from dozens of different vendors thanks to its plugin system, and some of those vendors have grown new features over the past year which LLM's abstraction layer can't handle, such as server-side tool execution.</p>\n<p>To help design that new abstraction layer I had Claude Code read through the Python client libraries for Anthropic, OpenAI, Gemini and Mistral and use those to help craft <code>curl</code> commands to access the raw JSON for both streaming and non-streaming modes across a range of different scenarios. Both the scripts and the captured outputs now live in this new repo.</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting Kyle Daigle",
-    "link": "https://simonwillison.net/2026/Apr/4/kyle-daigle/#atom-everything",
-    "updated": "2026-04-04T02:20:17+00:00",
-    "summary": "<blockquote cite=\"https://twitter.com/kdaigle/status/2040164759836778878\"><p>[GitHub] platform activity is surging. There were 1 billion commits in 2025. Now, it's 275 million per week, on pace for 14 billion this year if growth remains linear (spoiler: it won't.)</p>\n<p>GitHub Actions has grown from 500M minutes/week in 2023 to 1B minutes/week in 2025, and now 2.1B minutes so far this week.</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://twitter.com/kdaigle/status/2040164759836778878\">Kyle Daigle</a>, COO, GitHub</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Vulnerability Research Is Cooked",
-    "link": "https://simonwillison.net/2026/Apr/3/vulnerability-research-is-cooked/#atom-everything",
-    "updated": "2026-04-03T23:59:08+00:00",
-    "summary": "<p><strong><a href=\"https://sockpuppet.org/blog/2026/03/30/vulnerability-research-is-cooked/\">Vulnerability Research Is Cooked</a></strong></p>\nThomas Ptacek's take on the sudden and enormous impact the latest frontier models are having on the field of vulnerability research.</p>\n<blockquote>\n<p>Within the next few months, coding agents will drastically alter both the practice and the economics of exploit development. Frontier model improvement won’t be a slow burn, but rather a step function. Substantial amounts of high-impact vulnerability research (maybe even most of it) will happen simply by pointing an agent at a source tree and typing “find me zero days”.</p>\n</blockquote>\n<p>Why are agents so good at this? A combination of baked-in knowledge, pattern matching ability and brute force:</p>\n<blockquote>\n<p>You can't design a better problem for an LLM agent than exploitation research.</p>\n<p>Before you feed it a single token of context, a frontier LLM already encodes supernatural amounts of correlation across vast bodies of source code. Is the Linux KVM hypervisor connected to the <code>hrtimer</code> subsystem, <code>workqueue</code>, or <code>perf_event</code>? The model knows.</p>\n<p>Also baked into those model weights: the complete library of documented \"bug classes\" on which all exploit development builds: stale pointers, integer mishandling, type confusion, allocator grooming, and all the known ways of promoting a wild write to a controlled 64-bit read/write in Firefox.</p>\n<p>Vulnerabilities are found by pattern-matching bug classes and constraint-solving for reachability and exploitability. Precisely the implicit search problems that LLMs are most gifted at solving. Exploit outcomes are straightforwardly testable success/failure trials. An agent never gets bored and will search forever if you tell it to.</p>\n</blockquote>\n<p>The article was partly inspired by <a href=\"https://securitycryptographywhatever.com/2026/03/25/ai-bug-finding/\">this episode of the Security Cryptography Whatever podcast</a>, where David Adrian, Deirdre Connolly, and Thomas interviewed Anthropic's Nicholas Carlini for 1 hour 16 minutes.</p>\n<p>I just started a new tag here for <a href=\"https://simonwillison.net/tags/ai-security-research/\">ai-security-research</a> - it's up to 11 posts already.",
-    "summary_type": "html"
-  },
-  {
-    "title": "The cognitive impact of coding agents",
-    "link": "https://simonwillison.net/2026/Apr/3/cognitive-cost/#atom-everything",
-    "updated": "2026-04-03T23:57:04+00:00",
-    "summary": "<p>A fun thing about <a href=\"https://simonwillison.net/2026/Apr/2/lennys-podcast/\">recording a podcast</a> with a professional like Lenny Rachitsky is that his team know how to slice the resulting video up into TikTok-sized short form vertical videos. Here's <a href=\"https://x.com/lennysan/status/2039845666680176703\">one he shared on Twitter today</a> which ended up attracting over 1.1m views!</p>\n<p><video\n  src=\"https://static.simonwillison.net/static/2026/cognitive-cost.mp4\"\n  poster=\"https://static.simonwillison.net/static/2026/cognitive-cost-poster.jpg\"\n  controls\n  preload=\"none\"\n  playsinline\n  style=\"display:block; max-width:400px; width:100%; height:auto; margin:0 auto\"\n><track src=\"https://static.simonwillison.net/static/2026/cognitive-cost.vtt\" kind=\"captions\" srclang=\"en\" label=\"English\"></video>\n</p>\n<p>That was 48 seconds. Our <a href=\"https://simonwillison.net/2026/Apr/2/lennys-podcast/\">full conversation</a> lasted 1 hour 40 minutes.</p>",
     "summary_type": "html"
   }
 ]
