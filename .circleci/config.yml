@@ -1,37 +1,106 @@
-# This config was automatically generated from your source code
-# Stacks detected: cicd:github-actions:.github/workflows,deps:python:.
 version: 2.1
-orbs:
-  python: circleci/python@2
+
+parameters:
+  # 只有当该参数为 true 时才运行（用于：定时触发、手动触发）
+  run_atom_newsletter:
+    type: boolean
+    default: false
+
 jobs:
-  test-python:
-    # Install dependencies and run tests
+  generate:
     docker:
-      - image: cimg/python:3.8-node
+      - image: cimg/python:3.12
     steps:
+      # 1) 为了能 git push，需要先把“可写”的 SSH key 加载进来（Additional SSH Keys）
+      - add_ssh_keys:
+          fingerprints:
+            - "YOUR_SSH_KEY_FINGERPRINT"
+
       - checkout
-      - python/install-packages
+
+      # 2) 尽量模拟 actions/checkout fetch-depth: 0（完整历史）
       - run:
-          name: Run tests
-          command: pytest --junitxml=junit.xml || ((($? == 5)) && echo 'Did not find any tests to run.')
-      - store_test_results:
-          path: junit.xml
-  deploy:
-    # This is an example deploy job, not actually used by the workflow
-    docker:
-      - image: cimg/base:stable
-    steps:
-      # Replace this with steps to deploy to users
+          name: Ensure full git history (best-effort)
+          command: |
+            git fetch --prune --unshallow || true
+            git fetch --prune --tags || true
+
+      # 3) 安装依赖（可选缓存）
+      - restore_cache:
+          keys:
+            - pip-v1-{{ checksum "requirements.txt" }}
+            - pip-v1-
+
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Install dependencies
+          command: |
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+
+      - save_cache:
+          key: pip-v1-{{ checksum "requirements.txt" }}
+          paths:
+            - ~/.cache/pip
+
+      # 4) （可选但推荐）尽量对齐到每天 06:16 UTC 再执行
+      #    因为 CircleCI schedule trigger 的 UI/语义不是严格 cron 到分钟级，
+      #    且官方也说明不保证精确触发时间。
       - run:
-          name: found github actions config
-          command: ':'
+          name: Wait until 06:16 UTC (best-effort)
+          command: |
+            set -euo pipefail
+            target="$(date -u +%F) 06:16:00"
+            target_epoch="$(date -u -d "$target" +%s)"
+            now_epoch="$(date -u +%s)"
+
+            if [ "$now_epoch" -lt "$target_epoch" ]; then
+              sleep_sec=$(( target_epoch - now_epoch ))
+              echo "Sleeping ${sleep_sec}s until ${target} UTC..."
+              sleep "$sleep_sec"
+            else
+              echo "Current time is already past 06:16 UTC; continue now."
+            fi
+
+      # 5) 运行脚本（CircleCI 中把同名环境变量配置好即可，不用在这里写 secrets）
+      - run:
+          name: Run Atom Newsletter Script
+          command: |
+            python atom_newsletter.py
+
+      # 6) 提交并 push 回 main
+      - run:
+          name: Commit updated data & push
+          command: |
+            set -euo pipefail
+
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            git add index.html entries.json
+
+            if git diff --cached --quiet; then
+              echo "No changes to commit."
+              exit 0
+            fi
+
+            git commit -m "Update index.html & entries.json"
+
+            # GitHub App 集成下 checkout 可能是 HTTPS；为了用 SSH key push，把 origin 改成 SSH
+            git remote set-url origin "git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
+
+            # 确保 known_hosts 里有 github.com（避免首次连接要求交互确认）
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            git push origin "HEAD:${CIRCLE_BRANCH}"
+
 workflows:
-  build-and-test:
+  atom_newsletter_generator:
+    # 关键：默认 push 等触发的 pipeline 参数是 false，所以不会运行
+    when: << pipeline.parameters.run_atom_newsletter >>
     jobs:
-      - test-python
-    # - deploy:
-    #     requires:
-    #       - test-python
+      - generate:
+          filters:
+            branches:
+              only:
+                - main
