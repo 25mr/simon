@@ -10,6 +10,7 @@ jobs:
   generate:
     docker:
       - image: cimg/python:3.12
+    resource_class: medium
     steps:
       # 1) 为了能 git push，需要先把“可写”的 SSH key 加载进来（Additional SSH Keys）
       - add_ssh_keys:
