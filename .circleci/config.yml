@@ -14,7 +14,7 @@ jobs:
       # 1) 为了能 git push，需要先把“可写”的 SSH key 加载进来（Additional SSH Keys）
       - add_ssh_keys:
           fingerprints:
-            - "YOUR_SSH_KEY_FINGERPRINT"
+            - "SHA256:dr8acksjgrjUOPbA6T59ZgQsqdSovv7DbzYTo9Wldcs"
 
       - checkout
 
