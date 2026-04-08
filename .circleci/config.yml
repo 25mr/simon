@@ -1,7 +1,6 @@
 version: 2.1
 
 parameters:
-  # 只有当该参数为 true 时才运行（用于：定时触发、手动触发）
   run_atom_newsletter:
     type: boolean
     default: false
@@ -12,40 +11,28 @@ jobs:
       - image: cimg/python:3.12
     resource_class: medium
     steps:
-      # 1) 为了能 git push，需要先把“可写”的 SSH key 加载进来（Additional SSH Keys）
       - add_ssh_keys:
           fingerprints:
             - "SHA256:dr8acksjgrjUOPbA6T59ZgQsqdSovv7DbzYTo9Wldcs"
-
       - checkout
-
-      # 2) 尽量模拟 actions/checkout fetch-depth: 0（完整历史）
       - run:
           name: Ensure full git history (best-effort)
           command: |
             git fetch --prune --unshallow || true
             git fetch --prune --tags || true
-
-      # 3) 安装依赖（可选缓存）
       - restore_cache:
           keys:
             - pip-v1-{{ checksum "requirements.txt" }}
             - pip-v1-
-
       - run:
           name: Install dependencies
           command: |
             python -m pip install --upgrade pip
             pip install -r requirements.txt
-
       - save_cache:
           key: pip-v1-{{ checksum "requirements.txt" }}
           paths:
             - ~/.cache/pip
-
-      # 4) （可选但推荐）尽量对齐到每天 06:16 UTC 再执行
-      #    因为 CircleCI schedule trigger 的 UI/语义不是严格 cron 到分钟级，
-      #    且官方也说明不保证精确触发时间。
       - run:
           name: Wait until 06:16 UTC (best-effort)
           command: |
@@ -61,14 +48,10 @@ jobs:
             else
               echo "Current time is already past 06:16 UTC; continue now."
             fi
-
-      # 5) 运行脚本（CircleCI 中把同名环境变量配置好即可，不用在这里写 secrets）
       - run:
           name: Run Atom Newsletter Script
           command: |
             python atom_newsletter.py
-
-      # 6) 提交并 push 回 main
       - run:
           name: Commit updated data & push
           command: |
@@ -86,10 +69,8 @@ jobs:
 
             git commit -m "Update index.html & entries.json"
 
-            # GitHub App 集成下 checkout 可能是 HTTPS；为了用 SSH key push，把 origin 改成 SSH
             git remote set-url origin "git@github.com:${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}.git"
 
-            # 确保 known_hosts 里有 github.com（避免首次连接要求交互确认）
             mkdir -p ~/.ssh
             ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -97,7 +78,6 @@ jobs:
 
 workflows:
   atom_newsletter_generator:
-    # 关键：默认 push 等触发的 pipeline 参数是 false，所以不会运行
     when: << pipeline.parameters.run_atom_newsletter >>
     jobs:
       - generate:
