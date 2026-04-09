@@ -78,6 +78,8 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
 
     return entries
 
+_NO_RETRY = {400, 401, 403, 404}
+
 
 def groq_translate_html(
     summary_html: str,
@@ -152,7 +154,7 @@ def _call_groq(
                 if retry_after and retry_after.isdigit():
                     wait = int(retry_after)
                 else:
-                    # 指数退避 + 抖动（避��多段同时卡点反复撞限流）
+                    # 指数退避 + 抖动
                     wait = min(5 * (2 ** (attempt - 1)), 180) + random.uniform(0, 2)
 
                 print(f"[Groq] 🚦 429 Too Many Requests（{attempt}/{max_retries}），等待 {wait:.1f}s 后重试…")
