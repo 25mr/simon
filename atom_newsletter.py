@@ -9,7 +9,7 @@ import html
 from typing import List, Dict, Optional
 
 # 从环境变量读取机密配置
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 MAILEROO_API_KEY = os.getenv('MAILEROO_API_KEY')
 MAIL_TO = os.getenv('MAIL_TO')
 MAIL_FROM = os.getenv('MAIL_FROM')
@@ -74,27 +74,22 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
 _NO_RETRY = {400, 401, 403, 404}
 
 
-def deepseek_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[str]:
-    """
-    使用 DeepSeek 翻译 HTML 内容为指定语言。
-    - 长文本自动分段翻译，避免截断
-    - 失败自动重试 3 次（指数退避）
-    """
-    if not summary_html or not DEEPSEEK_API_KEY:
+def groq_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[str]:
+    if not summary_html or not GROQ_API_KEY:
         return None
 
     # ── 短文本：直接翻译 ──
     if len(summary_html) <= 6000:
-        return _call_deepseek(summary_html, to_lang)
+        return _call_groq(summary_html, to_lang)
 
     # ── 长文本：分段翻译 ──
     chunks = _split_html(summary_html, max_chars=3000)
-    print(f"[DeepSeek] 📄 长文本拆分为 {len(chunks)} 段")
+    print(f"[Groq] 📄 长文本拆分为 {len(chunks)} 段")
 
     results: list[str] = []
     for i, chunk in enumerate(chunks, 1):
-        print(f"[DeepSeek] 翻译第 {i}/{len(chunks)} 段…")
-        result = _call_deepseek(chunk, to_lang)
+        print(f"[Groq] 翻译第 {i}/{len(chunks)} 段…")
+        result = _call_groq(chunk, to_lang)
         if result is None:
             return None
         results.append(result)
@@ -105,7 +100,7 @@ def deepseek_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[
 # ─────────────────────────────────────────
 #  核心 API 调用（含重试）
 # ─────────────────────────────────────────
-def _call_deepseek(
+def _call_groq(
     html: str,
     to_lang: str,
     max_retries: int = 3,
@@ -113,7 +108,7 @@ def _call_deepseek(
 ) -> Optional[str]:
 
     payload = {
-        "model": "deepseek-chat",
+        "model": "llama-3.3-70b-versatile",
         "messages": [
             {
                 "role": "system",
@@ -125,24 +120,24 @@ def _call_deepseek(
             },
             {"role": "user", "content": html},
         ],
-        "temperature": 1.3,
-        "max_tokens": max_tokens,     # ← 关键
+        "temperature": 0.3,
+        "max_tokens": max_tokens,
     }
 
     headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
+        "Authorization": f"Bearer {GROQ_API_KEY}",  # 使用 Groq Key
         "Content-Type": "application/json",
     }
 
     for attempt in range(1, max_retries + 1):
         try:
             resp = requests.post(
-                "https://api.deepseek.com/chat/completions",
+                "https://api.groq.com/openai/v1/chat/completions",
                 headers=headers, json=payload, timeout=120,
             )
             # 不可重试的错误，立即退出
             if resp.status_code in _NO_RETRY:
-                print(f"[DeepSeek] ❌ HTTP {resp.status_code}，不可重试：{resp.text[:300]}")
+                print(f"[Groq] ❌ HTTP {resp.status_code}，不可重试：{resp.text[:300]}")
                 return None
 
             resp.raise_for_status()
@@ -151,7 +146,7 @@ def _call_deepseek(
 
             # ── 检测截断 ──
             if choice.get("finish_reason") == "length":
-                print("[DeepSeek] ⚠️ 输出被截断（finish_reason=length），"
+                print("[Groq] ⚠️ 输出被截断（finish_reason=length），"
                       "建议减小分段大小或增大 max_tokens")
 
             return choice["message"]["content"].strip()
@@ -163,18 +158,18 @@ def _call_deepseek(
                 requests.exceptions.Timeout: "⏰ 超时",
                 requests.exceptions.ConnectionError: "🔌 连接错误",
             }.get(type(e), "⚠️ HTTP 错误")
-            print(f"[DeepSeek] {tag}（{attempt}/{max_retries}）：{e}")
+            print(f"[Groq] {tag}（{attempt}/{max_retries}）：{e}")
 
         except Exception as e:
-            print(f"[DeepSeek] ❌ 未知错误：{type(e).__name__}: {e}")
-            return None                    # 未知异常不重试
+            print(f"[Groq] ❌ 未知错误：{type(e).__name__}: {e}")
+            return None  # 未知异常不重试
 
         if attempt < max_retries:
             wait = min(5 * 2 ** (attempt - 1), 180)
-            print(f"[DeepSeek] ⏳ {wait}s 后重试…")
+            print(f"[Groq] ⏳ {wait}s 后重试…")
             time.sleep(wait)
 
-    print("[DeepSeek] 🚫 重试耗尽，翻译放弃")
+    print("[Groq] 🚫 重试耗尽，翻译放弃")
     return None
 
 
@@ -351,7 +346,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
             )
 
             if with_translation:
-                zh_html = deepseek_translate_html(summary_html)
+                zh_html = groq_translate_html(summary_html)
                 if zh_html:
                     zh_html = _clamp_images(zh_html)
                     parts.append(
