@@ -133,7 +133,7 @@ def _call_groq(
             },
             {"role": "user", "content": html},
         ],
-        "temperature": 0.6,
+        "temperature": 0.3,
         "max_tokens": max_tokens,
     }
 
