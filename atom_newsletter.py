@@ -16,10 +16,19 @@ MAIL_FROM = os.getenv('MAIL_FROM')
 
 
 def fetch_atom_feed(url: str) -> str:
-    """获取 Atom feed XML 文本"""
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    return resp.text
+    """获取 Atom feed XML 文本，失败时最多重试 3 次"""
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        try:
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+            return resp.text
+        except Exception as e:
+            if attempt < max_retries:
+                print(f"获取 Atom feed 失败（第 {attempt}/{max_retries} 次），正在重试: {e}")
+            else:
+                print(f"获取 Atom feed 失败，已重试 {max_retries} 次: {e}")
+                raise
 
 
 def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
