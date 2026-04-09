@@ -79,11 +79,11 @@ def parse_atom_feed_yesterday(xml_content: str) -> List[Dict]:
     return entries
 
 
-# 不可重试的状态码
-_NO_RETRY = {400, 401, 403, 404}
-
-
-def groq_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[str]:
+def groq_translate_html(
+    summary_html: str,
+    to_lang: str = "zh",
+    pause_between_chunks: int = 10,   # ✅ 新增：每段成功后暂停
+) -> Optional[str]:
     if not summary_html or not GROQ_API_KEY:
         return None
 
@@ -103,16 +103,18 @@ def groq_translate_html(summary_html: str, to_lang: str = "zh") -> Optional[str]
             return None
         results.append(result)
 
+        # ✅ 每段成功后暂停（最后一段不需要）
+        if pause_between_chunks > 0 and i < len(chunks):
+            print(f"[Groq] 💤 分段节流：等待 {pause_between_chunks}s…")
+            time.sleep(pause_between_chunks)
+
     return "\n".join(results)
 
 
-# ─────────────────────────────────────────
-#  核心 API 调用（含重试）
-# ─────────────────────────────────────────
 def _call_groq(
     html: str,
     to_lang: str,
-    max_retries: int = 3,
+    max_retries: int = 10,   # ✅ 建议稍微加大，429 常需要更久
     max_tokens: int = 8000,
 ) -> Optional[str]:
 
@@ -134,16 +136,29 @@ def _call_groq(
     }
 
     headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",  # 使用 Groq Key
+        "Authorization": f"Bearer {GROQ_API_KEY}",
         "Content-Type": "application/json",
     }
 
+    url = "https://api.groq.com/openai/v1/chat/completions"
+
     for attempt in range(1, max_retries + 1):
         try:
-            resp = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers=headers, json=payload, timeout=120,
-            )
+            resp = requests.post(url, headers=headers, json=payload, timeout=120)
+
+            # ✅ 429：按 Retry-After 自适应等待（更“正确”的做法）
+            if resp.status_code == 429:
+                retry_after = resp.headers.get("Retry-After")
+                if retry_after and retry_after.isdigit():
+                    wait = int(retry_after)
+                else:
+                    # 指数退避 + 抖动（避��多段同时卡点反复撞限流）
+                    wait = min(5 * (2 ** (attempt - 1)), 180) + random.uniform(0, 2)
+
+                print(f"[Groq] 🚦 429 Too Many Requests（{attempt}/{max_retries}），等待 {wait:.1f}s 后重试…")
+                time.sleep(wait)
+                continue
+
             # 不可重试的错误，立即退出
             if resp.status_code in _NO_RETRY:
                 print(f"[Groq] ❌ HTTP {resp.status_code}，不可重试：{resp.text[:300]}")
@@ -153,30 +168,25 @@ def _call_groq(
             data = resp.json()
             choice = data["choices"][0]
 
-            # ── 检测截断 ──
             if choice.get("finish_reason") == "length":
-                print("[Groq] ⚠️ 输出被截断（finish_reason=length），"
-                      "建议减小分段大小或增大 max_tokens")
+                print("[Groq] ⚠️ 输出被截断（finish_reason=length），建议减小分段大小或增大 max_tokens")
 
             return choice["message"]["content"].strip()
 
-        except (requests.exceptions.Timeout,
-                requests.exceptions.ConnectionError,
-                requests.exceptions.HTTPError) as e:
-            tag = {
-                requests.exceptions.Timeout: "⏰ 超时",
-                requests.exceptions.ConnectionError: "🔌 连接错误",
-            }.get(type(e), "⚠️ HTTP 错误")
-            print(f"[Groq] {tag}（{attempt}/{max_retries}）：{e}")
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            wait = min(5 * (2 ** (attempt - 1)), 180) + random.uniform(0, 2)
+            print(f"[Groq] ⏰/🔌 网络异常（{attempt}/{max_retries}）：{e}，{wait:.1f}s 后重试…")
+            time.sleep(wait)
+
+        except requests.exceptions.HTTPError as e:
+            # 其它 HTTP 错误：也做退避
+            wait = min(5 * (2 ** (attempt - 1)), 180) + random.uniform(0, 2)
+            print(f"[Groq] ⚠️ HTTP 错误（{attempt}/{max_retries}）：{e}，{wait:.1f}s 后重试…")
+            time.sleep(wait)
 
         except Exception as e:
             print(f"[Groq] ❌ 未知错误：{type(e).__name__}: {e}")
-            return None  # 未知异常不重试
-
-        if attempt < max_retries:
-            wait = min(5 * 2 ** (attempt - 1), 180)
-            print(f"[Groq] ⏳ {wait}s 后重试…")
-            time.sleep(wait)
+            return None
 
     print("[Groq] 🚫 重试耗尽，翻译放弃")
     return None
