@@ -34,21 +34,6 @@ jobs:
           paths:
             - ~/.cache/pip
       - run:
-          name: Wait until 06:16 UTC (best-effort)
-          command: |
-            set -euo pipefail
-            target="$(date -u +%F) 06:16:00"
-            target_epoch="$(date -u -d "$target" +%s)"
-            now_epoch="$(date -u +%s)"
-
-            if [ "$now_epoch" -lt "$target_epoch" ]; then
-              sleep_sec=$(( target_epoch - now_epoch ))
-              echo "Sleeping ${sleep_sec}s until ${target} UTC..."
-              sleep "$sleep_sec"
-            else
-              echo "Current time is already past 06:16 UTC; continue now."
-            fi
-      - run:
           name: Run Atom Newsletter Script
           command: |
             python atom_newsletter.py
