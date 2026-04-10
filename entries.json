@@ -1,5 +1,19 @@
 [
   {
+    "title": "GitHub Repo Size",
+    "link": "https://simonwillison.net/2026/Apr/9/github-repo-size/#atom-everything",
+    "updated": "2026-04-09T21:31:50+00:00",
+    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/github-repo-size\">GitHub Repo Size</a></p>\n    <p>GitHub doesn't tell you the repo size in the UI, but it's available in the CORS-friendly <a href=\"https://api.github.com/repos/simonw/datasette\">API</a>. Paste a repo into this tool to see the size, <a href=\"https://tools.simonwillison.net/github-repo-size?repo=simonw%2Fdatasette\">for example for simonw/datasette</a> (8.1MB).</p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "asgi-gzip 0.3",
+    "link": "https://simonwillison.net/2026/Apr/9/asgi-gzip/#atom-everything",
+    "updated": "2026-04-09T03:54:40+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/asgi-gzip/releases/tag/0.3\">asgi-gzip 0.3</a></p>\n    <p>I ran into trouble deploying a new feature using <a href=\"https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events\">SSE</a> to a production Datasette instance, and it turned out that instance was using <a href=\"https://github.com/simonw/datasette-gzip\">datasette-gzip</a> which uses <a href=\"https://github.com/simonw/asgi-gzip\">asgi-gzip</a> which was incorrectly compressing <code>event/text-stream</code> responses.</p>\n<p><code>asgi-gzip</code> was extracted from Starlette, and has <a href=\"https://simonwillison.net/2022/Apr/28/issue-on-changes/\">a GitHub Actions scheduled workflow</a> to check Starlette for updates that need to be ported to the library... but that action had stopped running and hence had missed <a href=\"https://github.com/Kludex/starlette/commit/a9a8dab0cc3cbd05dca37650fc392717b9fe5bbf\">Starlette's own fix</a> for this issue.</p>\n<p>I ran the workflow and integrated the new fix, and now <code>datasette-gzip</code> and <code>asgi-gzip</code> both correctly handle <code>text/event-stream</code> in SSE responses.</p>",
+    "summary_type": "html"
+  },
+  {
     "title": "Meta's new model is Muse Spark, and meta.ai chat has some interesting tools",
     "link": "https://simonwillison.net/2026/Apr/8/muse-spark/#atom-everything",
     "updated": "2026-04-08T23:07:44+00:00",
@@ -53,20 +67,6 @@
     "link": "https://simonwillison.net/2026/Apr/6/scan-for-secrets/#atom-everything",
     "updated": "2026-04-06T02:59:28+00:00",
     "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/scan-for-secrets/releases/tag/0.3\">scan-for-secrets 0.3</a></p>\n    <blockquote>\n<ul>\n<li>New <code>-r/--redact</code> option which shows the list of matches, asks for confirmation and then replaces every match with <code>REDACTED</code>, taking escaping rules into account.</li>\n<li>New Python function <code>redact_file(file_path: str | Path, secrets: list[str], replacement: str = \"REDACTED\") -&gt; int</code>.</li>\n</ul>\n</blockquote>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Cleanup Claude Code Paste",
-    "link": "https://simonwillison.net/2026/Apr/6/cleanup-claude-code-paste/#atom-everything",
-    "updated": "2026-04-06T02:55:23+00:00",
-    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/cleanup-claude-code-paste\">Cleanup Claude Code Paste</a></p>\n    <p>Super-niche tool this. I sometimes copy prompts out of the Claude Code terminal app and they come out with a bunch of weird additional whitespace. This tool cleans that up.</p>\n<p><img alt=\"Screenshot of a web tool titled &quot;Cleanup Claude Code Paste&quot; with the subtitle &quot;Paste terminal output to remove the ❯ prompt, fix wrapped-line whitespace, and join lines into clean text.&quot; An input textarea contains pasted terminal output starting with &quot;❯ Add a -r/--redact option which asks for user approval (after telling it how many replacements will happen and in which files and which lines – standard output basically) and then rewrites the files in that folder to replace all matched secrets with REDACTED. Run tests with 'uv run pytest' and use red/green TDD&quot;. Below is a &quot;Cleaned output:&quot; section showing the same text with the ❯ prompt removed and whitespace cleaned up. A blue &quot;Copy to clipboard&quot; button appears at the bottom.\" src=\"https://static.simonwillison.net/static/2026/claude-code-cleanup.jpg\" /></p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "datasette-ports 0.1",
-    "link": "https://simonwillison.net/2026/Apr/6/datasette-ports/#atom-everything",
-    "updated": "2026-04-06T00:23:55+00:00",
-    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/datasette/datasette-ports/releases/tag/0.1\">datasette-ports 0.1</a></p>\n    <p>Another <a href=\"https://gisthost.github.io/?f92d8a6bdadee1c77972b5e51954144e\">example</a> of README-driven development, this time solving a problem that might be unique to me.</p>\n<p>I often find myself running a bunch of different <a href=\"https://datasette.io\">Datasette</a> instances with different databases and different in-development plugins, spreads across dozens of different terminal windows - enough that I frequently lose them!</p>\n<p>Now I can run this:</p>\n<pre><code>datasette install datasette-ports\ndatasette ports\n</code></pre>\n<p>And get a list of every running instance that looks something like this:</p>\n<pre><code>http://127.0.0.1:8333/ - v1.0a26\n  Databases: data\n  Plugins: datasette-enrichments, datasette-enrichments-llm, datasette-llm, datasette-secrets\nhttp://127.0.0.1:8001/ - v1.0a26\n  Databases: creatures\n  Plugins: datasette-extract, datasette-llm, datasette-secrets\nhttp://127.0.0.1:8900/ - v0.65.2\n  Databases: logs\n</code></pre>",
     "summary_type": "html"
   }
 ]
