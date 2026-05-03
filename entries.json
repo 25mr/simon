@@ -1,5 +1,12 @@
 [
   {
+    "title": "Sightings",
+    "link": "https://simonwillison.net/2026/May/2/sightings/#atom-everything",
+    "updated": "2026-05-02T17:26:40+00:00",
+    "summary": "<p><strong><a href=\"https://simonwillison.net/elsewhere/sighting/\">/elsewhere/sightings/</a></strong></p>\nI have a new camera (a Canon R6 Mark II) so I'm taking a lot more photos of birds. I share my best wildlife photos on <a href=\"https://www.inaturalist.org/\">iNaturalist</a>, and based on yesterday's <a href=\"https://simonwillison.net/2026/May/1/inat-sightings/\">successful prototype</a>  I decided to add those to my blog.</p>\n<p><img class=\"blogmark-image\" src=\"https://static.simonwillison.net/static/2026/beats-sightings.jpeg\" alt=\"Screenshot of a &quot;Sightings&quot; webpage with a search bar and RSS icon, showing &quot;Filters: Sorted by date&quot; and &quot;208 results page 1 / 7 next » last »»&quot;. First entry: SIGHTING 7:51 PM — Acorn Woodpecker, with two photos labeled &quot;Acorn Woodpecker&quot; of black and white woodpeckers with red caps on tree branches, dated 2nd May 2026. Second entry: SIGHTING 10:08 AM – 11:17 AM — Acorn Woodpecker, Western Fence Lizard, Osprey, with three photos labeled &quot;Acorn Woodpecker&quot; (bird on bare branches against blue sky), &quot;Wester...&quot; (lizard on tree bark), and &quot;Osprey&quot; (nest on a utility pole), dated 1st May 2026. Third entry: SIGHTING 11:11 AM — White-crowned Sparrow, with a photo labeled &quot;White-crowned Sparrow&quot; of a sparrow with black and white striped head singing with open beak, dated 30th Apr 2026.\"></p>\n<p>I built this feature on my phone using Claude Code for web, as an extension of my <a href=\"https://simonwillison.net/2026/Feb/20/beats/\">beats system</a> for syndicating external content. Here's <a href=\"https://github.com/simonw/simonwillisonblog/pull/668\">the PR</a> and prompt.</p>\n<p>As with my other forms of incoming syndicated content sightings show up on the homepage, the date archive pages, and in site search results.</p>\n<p>I back-populated over a decade of iNaturalist sightings, which means you that if you <a href=\"https://simonwillison.net/search/?q=lemur\">search for lemur</a> you'll see my lemur photos from Madagascar in 2019!",
+    "summary_type": "html"
+  },
+  {
     "title": "iNaturalist Sightings",
     "link": "https://simonwillison.net/2026/May/1/inat-sightings/#atom-everything",
     "updated": "2026-05-01T19:35:41+00:00",
@@ -60,13 +67,6 @@
     "link": "https://simonwillison.net/2026/Apr/29/llm-2/#atom-everything",
     "updated": "2026-04-29T18:57:47+00:00",
     "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm/releases/tag/0.32a0\">llm 0.32a0</a></p>\n    <p>See <a href=\"https://simonwillison.net/2026/Apr/29/llm/\">the annotated release notes</a>.</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting OpenAI Codex base_instructions",
-    "link": "https://simonwillison.net/2026/Apr/28/openai-codex/#atom-everything",
-    "updated": "2026-04-28T22:02:53+00:00",
-    "summary": "<blockquote cite=\"https://github.com/openai/codex/blob/66b0781502be5de3b1909525c987643b9e5e407d/codex-rs/models-manager/models.json#L55\"><p><code>Never talk about goblins, gremlins, raccoons, trolls, ogres, pigeons, or other animals or creatures unless it is absolutely and unambiguously relevant to the user's query.</code></p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://github.com/openai/codex/blob/66b0781502be5de3b1909525c987643b9e5e407d/codex-rs/models-manager/models.json#L55\">OpenAI Codex base_instructions</a>, for GPT-5.5</p>",
     "summary_type": "html"
   }
 ]
