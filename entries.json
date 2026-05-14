@@ -1,5 +1,26 @@
 [
   {
+    "title": "Welcome to the Datasette blog",
+    "link": "https://simonwillison.net/2026/May/13/welcome-to-the-datasette-blog/#atom-everything",
+    "updated": "2026-05-13T23:59:39+00:00",
+    "summary": "<p><strong><a href=\"https://datasette.io/blog/2026/new-blog/\">Welcome to the Datasette blog</a></strong></p>\nWe have a bunch of neat Datasette announcements in the pipeline so we decided it was time the project grew an official blog.</p>\n<p>I built this using OpenAI Codex desktop, which turns out to have the Markdown session transcript export feature I've always wanted. Here's <a href=\"https://gist.github.com/simonw/885b11eee46822622b8031a1f4e5f3a3\">the session that built the blog</a>. See also <a href=\"https://github.com/simonw/datasette.io/issues/179\">issue 179</a>.",
+    "summary_type": "html"
+  },
+  {
+    "title": "Quoting Boris Mann",
+    "link": "https://simonwillison.net/2026/May/13/boris-mann/#atom-everything",
+    "updated": "2026-05-13T16:15:50+00:00",
+    "summary": "<blockquote cite=\"https://bsky.app/profile/bmann.ca/post/3mlp2ipupv22z\"><p>“11 AI agents” is meaningless as a phrase. </p>\n<p>If I said “I have 11 spreadsheets” or “I have 11 browser tabs” to do my work, it means about the same thing.</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://bsky.app/profile/bmann.ca/post/3mlp2ipupv22z\">Boris Mann</a></p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "CSP Allow-list Experiment",
+    "link": "https://simonwillison.net/2026/May/13/csp-allow/#atom-everything",
+    "updated": "2026-05-13T04:50:45+00:00",
+    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/csp-allow\">CSP Allow-list Experiment</a></p>\n        <p>An experiment that shows that you can load an app in a CSP-protected sandboxed iframe (see <a href=\"https://simonwillison.net/2026/Apr/3/test-csp-iframe-escape/\">previous note</a>) and have a custom <code>fetch()</code> that intercepts CSP errors and passes them up to the parent window... which can then prompt the user to add that domain to an allow-list and then refresh the page.</p>\n<p><img alt=\"Screenshot of a web tool titled &quot;CSP Allow-list Experiment&quot; with buttons Reset sample, Clear allow-list, Refresh preview. Left panel shows HTML source code starting with &lt;!doctype html&gt;. Right panel shows Preview with CSP header default-src 'none'; script-src 'unsafe-inline'; style-s... and heading &quot;Sandbox fetch test&quot;. A modal dialog from tools.simonwillison.net is overlaid reading: &quot;The sandbox tried to connect to: https://api.inaturalist.org   Add this origin to the CSP connect-src allow-list and refresh the page?&quot; with an unchecked checkbox &quot;Don't allow tools.simonwillison.net to prompt you again&quot; and Cancel and OK buttons. Below is &quot;Messages from sandbox&quot; showing fetch-catch blocked https://api.inaturalist.org/v1/observations?per... connect-src · https://api.inaturalist.org. At the bottom left is &quot;Allowed fetch() origins&quot; with an input field containing https://api.github.com, an Add button, and a tag https://api.github.com x.\" src=\"https://static.simonwillison.net/static/2026/csp-allow.jpg\" /></p>\n<p>I built this one with GPT-5.5 xhigh running in the Codex desktop app.</p>",
+    "summary_type": "html"
+  },
+  {
     "title": "datasette 1.0a29",
     "link": "https://simonwillison.net/2026/May/12/datasette/#atom-everything",
     "updated": "2026-05-12T23:41:06+00:00",
@@ -46,27 +67,6 @@
     "link": "https://simonwillison.net/2026/May/11/zombie-internet/#atom-everything",
     "updated": "2026-05-11T19:21:27+00:00",
     "summary": "<p><strong><a href=\"https://www.404media.co/your-ai-use-is-breaking-my-brain/\">Your AI Use Is Breaking My Brain</a></strong></p>\nExcellent, angry piece by Jason Koebler on how AI writing online is becoming impossible to avoid, filtering it is mentally exhausting and it's even starting to distort regular human writing styles.</p>\n<p>I particularly liked his use of the term \"Zombie Internet\" to define a different, more insidious alternative to the \"Dead Internet\" (which is just bots talking to each other):</p>\n<blockquote>\n<p>I called it the Zombie Internet because the truth is that large parts of the internet are not just bots talking to bots or bots talking to people. It’s people talking to bots, people talking to people, people creating “AI agents” and then instructing them to interact with people. It’s people using AI talking to people who are not using AI, and it’s people using AI talking to other people who are using AI. It’s influencer hustlebros who are teaching each other how to make AI influencers and have spun up automated YouTube channels and blogs and social media accounts that are spamming the internet for the sole purpose of making money. It is whatever the fuck “Moltbook” is and whatever the fuck X and LinkedIn have become. It’s AI summaries of real books being sold as the book itself and inspirational Reddit posts and comment threads in which people give heartfelt advice to some account that’s actually being run by a marketing firm. [...]</p>\n</blockquote>\n\n    <p><small></small>Via <a href=\"https://bsky.app/profile/jasonkoebler.bsky.social/post/3mllgvidacs2n\">@jasonkoebler.bsky.social</a></small></p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Using LLM in the shebang line of a script",
-    "link": "https://simonwillison.net/2026/May/11/llm-shebang/#atom-everything",
-    "updated": "2026-05-11T18:48:57+00:00",
-    "summary": "<p><strong>TIL:</strong> <a href=\"https://til.simonwillison.net/llms/llm-shebang\">Using LLM in the shebang line of a script</a></p>\n        <p>Kim_Bruning <a href=\"https://news.ycombinator.com/item?id=48073246#48090590\">on Hacker News</a>:</p>\n<blockquote>\n<p>But seriously, you can put a shebang on an english text file now (if you're sufficiently brave) [...]</p>\n</blockquote>\n<p>This inspired me to look at patterns for doing exactly that with <a href=\"https://llm.datasette.io/en/stable/\">LLM</a>. Here's the simplest, which takes advantage of <a href=\"https://llm.datasette.io/en/stable/fragments.html\">LLM fragments</a>:</p>\n<pre><code>#!/usr/bin/env -S llm -f\nGenerate an SVG of a pelican riding a bicycle\n</code></pre>\n<p>But you can also incorporate <a href=\"https://llm.datasette.io/en/stable/tools.html\">tool calls</a> using the <code>-T name_of_tool</code> option:</p>\n<pre><code>#!/usr/bin/env -S llm -T llm_time -f\nWrite a haiku that mentions the exact current time\n</code></pre>\n<p>Or even execute YAML templates directly that define extra tools as Python functions:</p>\n<pre><span class=\"pl-c\"><span class=\"pl-c\">#</span>!/usr/bin/env -S llm -t</span>\n<span class=\"pl-ent\">model</span>: <span class=\"pl-s\">gpt-5.4-mini</span>\n<span class=\"pl-ent\">system</span>: <span class=\"pl-s\">|</span>\n<span class=\"pl-s\">  Use tools to run calculations</span>\n<span class=\"pl-s\"></span><span class=\"pl-ent\">functions</span>: <span class=\"pl-s\">|</span>\n<span class=\"pl-s\">  def add(a: int, b: int) -&gt; int:</span>\n<span class=\"pl-s\">      return a + b</span>\n<span class=\"pl-s\">  def multiply(a: int, b: int) -&gt; int:</span>\n<span class=\"pl-s\">      return a * b</span></pre>\n\n<p>Then:</p>\n<pre><code>./calc.sh 'what is 2344 * 5252 + 134' --td\n</code></pre>\n<p>Which outputs (thanks to that <code>--td</code> tools debug option):</p>\n<pre><code>Tool call: multiply({'a': 2344, 'b': 5252})\n  12310688\n\nTool call: add({'a': 12310688, 'b': 134})\n  12310822\n\n2344 × 5252 + 134 = **12,310,822**\n</code></pre>\n<p>Read the full TIL for <a href=\"https://til.simonwillison.net/llms/llm-shebang#templates-with-tools\">a more complex example</a> that uses the Datasette SQL API to answer questions about content on my blog.</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Learning on the Shop floor",
-    "link": "https://simonwillison.net/2026/May/11/learning-on-the-shop-floor/#atom-everything",
-    "updated": "2026-05-11T15:46:36+00:00",
-    "summary": "<p><strong><a href=\"https://twitter.com/tobi/status/2053121182044451016\">Learning on the Shop floor</a></strong></p>\nTobias Lütke describes Shopify's internal coding agent tool, River, which operates entirely in public on their Slack:</p>\n<blockquote>\n<p>River does not respond to direct messages. She politely declines and suggests to create a public channel for you and her to start working in. I myself work with river in <code>#tobi_river</code> channel and many followed this pattern.  Every conversation is therefore searchable.  Anyone at Shopify  can jump in. In my own channel, there are over 100 people who, react to threads, add color and add context, pick up the torch, help with the reviews, remind me how rusty I am, and importantly, learn from watching. [...]</p>\n<p>As so often with German, there is a word for the kind of environment: <em>Lehrwerkstatt</em>. Literally: <strong>A teaching workshop</strong>. The whole shop floor is the classroom. You learn by being near the work. Being a constant learner is one of the core values of the firm.</p>\n<p>Shopify wants to be a Lehrwerkstatt at scale and River has now gotten us closer to this ideal than ever. It’s <em>osmosis learning</em>, because it does not require a curriculum, a training plan, or a manager. It just requires everyone's work to be visible to the maximum extent possible. Everyone learns from each other.</p>\n</blockquote>\n<p>I'm reminded of how Midjourney spent its first few years with the primary interface being public Discord channels, forcing users to share their prompts and learn from each other's experiments. I continue to believe that the early success of Midjourney was tied to this mechanism, helping to compensate for how weird and finicky text-to-image prompting is.",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting New York Times Editors’ Note",
-    "link": "https://simonwillison.net/2026/May/10/new-york-times-editors-note/#atom-everything",
-    "updated": "2026-05-10T23:58:49+00:00",
-    "summary": "<blockquote cite=\"https://www.nytimes.com/2026/04/14/world/canada/election-carney-liberal-party.html\"><p><em>This article was updated after The Times learned that a remark attributed to Pierre Poilievre, the Conservative leader, was in fact an A.I.-generated summary of his views about Canadian politics that A.I. rendered as a quotation. The reporter should have checked the accuracy of what the A.I. tool returned.  The article now accurately quotes from a speech delivered by Mr. Poilievre in April. [...] He did not refer to politicians who changed allegiances as turncoats in that speech.</em></p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://www.nytimes.com/2026/04/14/world/canada/election-carney-liberal-party.html\">New York Times Editors’ Note</a></p>",
     "summary_type": "html"
   }
 ]
