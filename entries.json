@@ -1,5 +1,33 @@
 [
   {
+    "title": "inaturalist-clumper 0.1",
+    "link": "https://simonwillison.net/2026/May/15/inaturalist-clumper/#atom-everything",
+    "updated": "2026-05-15T23:53:11+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/inaturalist-clumper/releases/tag/0.1\">inaturalist-clumper 0.1</a></p>\n        <p>Part of the infrastructure I use for <a href=\"https://simonwillison.net/2026/May/1/inat-sightings/\">publishing my iNaturalist sightings on my blog</a>. I've been running this in production for a few weeks now, inspiring some iterations on how it works, so I decided to ship a 0.1 release.</p>\n<p>You can see an example of the output <a href=\"https://github.com/simonw/inaturalist-clumps/blob/main/clumps.json\">in this JSON file</a>.</p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "Western Gull, Rock Pigeon",
+    "link": "https://simonwillison.net/2026/May/15/sighting-361818285/#atom-everything",
+    "updated": "2026-05-15T14:42:00+00:00",
+    "summary": "<p><img src=\"https://static.inaturalist.org/photos/660343826/large.jpg\" alt=\"Western Gull\"></p><p><img src=\"https://static.inaturalist.org/photos/660344126/large.jpg\" alt=\"Rock Pigeon\"></p><p>Western Gull, Rock Pigeon, in Los Angeles Area (custom), CA, US</p><p>I went for a bird walk in the morning before PyCon, and we spotted a local seagull enjoying a Starbucks.</p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "QR code generator",
+    "link": "https://simonwillison.net/2026/May/15/qr-code-generator/#atom-everything",
+    "updated": "2026-05-15T04:00:49+00:00",
+    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/qr-code-generator\">QR code generator</a></p>\n        <p>Claude helped me build this tool for creating QR codes, for both text/URLs and for connecting to WiFi networks.</p>\n<p><img alt=\"Screenshot of a QR code generator web form. Heading &quot;QR code generator&quot; with subtitle &quot;Create a scannable code for a URL, text, or WiFi network.&quot; A segmented toggle shows &quot;URL / text&quot; and &quot;WiFi&quot; with WiFi selected. Below are fields: &quot;Network name (SSID)&quot; with placeholder &quot;My WiFi&quot;; &quot;Password&quot; with placeholder &quot;Password&quot; and a blue &quot;Show&quot; link; &quot;Security&quot; dropdown set to &quot;WPA / WPA2 / WPA3 (most common)&quot;; an unchecked &quot;Hidden&quot; checkbox; helper text &quot;Not sure? Leave it on WPA / WPA2 / WPA3 — that covers almost every home WiFi network.&quot; Below that: &quot;Style&quot; dropdown set to &quot;Square&quot;, an unchecked &quot;Border&quot; checkbox, &quot;Size&quot; dropdown set to &quot;Medium&quot;, and a &quot;Color&quot; swatch showing black. At the bottom is a blue &quot;Generate QR code&quot; button.\" src=\"https://static.simonwillison.net/static/2026/qr-code-generate.jpg\" /></p>",
+    "summary_type": "html"
+  },
+  {
+    "title": "datasette-llm-limits 0.1a0",
+    "link": "https://simonwillison.net/2026/May/15/datasette-llm-limits/#atom-everything",
+    "updated": "2026-05-15T00:42:09+00:00",
+    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/datasette/datasette-llm-limits/releases/tag/0.1a0\">datasette-llm-limits 0.1a0</a></p>\n        <p>This plugin works in conjunction with <a href=\"https://github.com/datasette/datasette-llm\">datasette-llm</a> and <a href=\"https://github.com/datasette/datasette-llm-accountant\">datasette-llm-accountant</a> to let you configure a per-user (or global) spending limit for LLM usage inside of Datasette. Configuration looks something like this:</p>\n<pre><span class=\"pl-ent\">plugins</span>:\n  <span class=\"pl-ent\">datasette-llm-limits</span>:\n    <span class=\"pl-ent\">limits</span>:\n      <span class=\"pl-ent\">per-user-daily</span>:\n        <span class=\"pl-ent\">scope</span>: <span class=\"pl-s\">actor</span>\n        <span class=\"pl-ent\">window</span>: <span class=\"pl-s\">rolling-24h</span>\n        <span class=\"pl-ent\">amount_usd</span>: <span class=\"pl-c1\">1.00</span>\n</pre>",
+    "summary_type": "html"
+  },
+  {
     "title": "Not so locked in any more",
     "link": "https://simonwillison.net/2026/May/14/not-so-locked-in/#atom-everything",
     "updated": "2026-05-14T22:53:49+00:00",
@@ -39,34 +67,6 @@
     "link": "https://simonwillison.net/2026/May/13/csp-allow/#atom-everything",
     "updated": "2026-05-13T04:50:45+00:00",
     "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/csp-allow\">CSP Allow-list Experiment</a></p>\n        <p>An experiment that shows that you can load an app in a CSP-protected sandboxed iframe (see <a href=\"https://simonwillison.net/2026/Apr/3/test-csp-iframe-escape/\">previous note</a>) and have a custom <code>fetch()</code> that intercepts CSP errors and passes them up to the parent window... which can then prompt the user to add that domain to an allow-list and then refresh the page.</p>\n<p><img alt=\"Screenshot of a web tool titled &quot;CSP Allow-list Experiment&quot; with buttons Reset sample, Clear allow-list, Refresh preview. Left panel shows HTML source code starting with &lt;!doctype html&gt;. Right panel shows Preview with CSP header default-src 'none'; script-src 'unsafe-inline'; style-s... and heading &quot;Sandbox fetch test&quot;. A modal dialog from tools.simonwillison.net is overlaid reading: &quot;The sandbox tried to connect to: https://api.inaturalist.org   Add this origin to the CSP connect-src allow-list and refresh the page?&quot; with an unchecked checkbox &quot;Don't allow tools.simonwillison.net to prompt you again&quot; and Cancel and OK buttons. Below is &quot;Messages from sandbox&quot; showing fetch-catch blocked https://api.inaturalist.org/v1/observations?per... connect-src · https://api.inaturalist.org. At the bottom left is &quot;Allowed fetch() origins&quot; with an input field containing https://api.github.com, an Add button, and a tag https://api.github.com x.\" src=\"https://static.simonwillison.net/static/2026/csp-allow.jpg\" /></p>\n<p>I built this one with GPT-5.5 xhigh running in the Codex desktop app.</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "datasette 1.0a29",
-    "link": "https://simonwillison.net/2026/May/12/datasette/#atom-everything",
-    "updated": "2026-05-12T23:41:06+00:00",
-    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/datasette/releases/tag/1.0a29\">datasette 1.0a29</a></p>\n        <blockquote>\n<ul>\n<li>New <code>TokenRestrictions.abbreviated(datasette)</code> <a href=\"https://docs.datasette.io/en/latest/internals.html#tokenrestrictions\">utility method</a> for creating <code>\"_r\"</code> dictionaries. <a href=\"https://github.com/simonw/datasette/issues/2695\">#2695</a></li>\n<li>Table headers and column options are now visible even if a table contains zero rows. <a href=\"https://github.com/simonw/datasette/issues/2701\">#2701</a></li>\n<li>Fixed bug with display of column actions dialog on Mobile Safari. <a href=\"https://github.com/simonw/datasette/issues/2708\">#2708</a></li>\n<li>Fixed bug where tests could crash with a segfault due to a race condition between <code>Datasette.close()</code> and <code>Datasette.close()</code>. <a href=\"https://github.com/simonw/datasette/issues/2709\">#2709</a></li>\n</ul>\n</blockquote>\n<p>That segfault bug was <em>gnarly</em>. I added a mechanism to Datasette recently that would automatically close connections at the end of each test, but it turned out that introduced a race condition where an in-flight query could sometimes be executing in a thread against a connection while it was being closed. I ended up solving that by having Codex CLI (with GPT-5.5 xhigh) create <a href=\"https://github.com/simonw/datasette/issues/2709#issuecomment-4435604727\">a minimal Dockerfile</a> that recreated the bug.</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting Mo Bitar",
-    "link": "https://simonwillison.net/2026/May/12/mo-bitar/#atom-everything",
-    "updated": "2026-05-12T22:59:58+00:00",
-    "summary": "<blockquote cite=\"https://www.tiktok.com/@atmoio/video/7638649825382190350\"><p>Now, if your CEO has never heard the phrase Ralph Loop, oh man, you are less than 30 days away from your next promotion. I'm not even exaggerating. Walk into his office, close the door, and say, hey chief, been experimenting with something. It's called Ralph Loops. And I think it could change literally everything. And he's gonna say, what's a Ralph loop? And you will say, give me $18,000 worth of API credits and I'll show you. Now you won't actually do anything, because you can't do anything. Because nobody can, because nobody knows what they're doing. But by the time he figures that out, you'll have a new title, and equity bump. [...]</p>\n<p>Talk about automation constantly. Nothing arouses the slumbering capitalists than the mention of automation. Drop names too, bro. Like talk about specific team members you can automate out of existence. Be like, yo, I automated Gary, bro. Tag Gary in the message. Tag him in Slack in a very public channel. Be like, yo, I just automated @Gary. His function has been Ralph Looped. And tag your CEO in the same message. You think you're getting laid off after that?</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://www.tiktok.com/@atmoio/video/7638649825382190350\">Mo Bitar</a>, The Unethical Guide to Surviving AI Layoffs, TikTok</p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting Mitchell Hashimoto",
-    "link": "https://simonwillison.net/2026/May/12/mitchell-hashimoto/#atom-everything",
-    "updated": "2026-05-12T22:21:51+00:00",
-    "summary": "<blockquote cite=\"https://lobste.rs/s/oznirn/redis_cost_ambition#c_dzrja0\"><p>The thing about 90% of TDMs [Technical Decision Makers] is that they're motivated primarily by NOT GETTING FIRED. These aren't people who browser Lobsters or push to GH on the weekend. These are people that work 9 to 5, get paid, go home, and NEVER THINK ABOUT WORK AGAIN. So to achieve all that, they follow secular trends supported by analysts and broad public sentiment. Oh, Gartner said that \"AI strategy\" is most important? McKinsey said \"context\" needs to be managed? Well, \"Context Engine for AI Apps\" is going to be defensible. Buy it.</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://lobste.rs/s/oznirn/redis_cost_ambition#c_dzrja0\">Mitchell Hashimoto</a>, in a conversation about the design of the <a href=\"https://redis.io/\">Redis homepage</a></p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "llm 0.32a2",
-    "link": "https://simonwillison.net/2026/May/12/llm/#atom-everything",
-    "updated": "2026-05-12T17:45:07+00:00",
-    "summary": "<p><strong>Release:</strong> <a href=\"https://github.com/simonw/llm/releases/tag/0.32a2\">llm 0.32a2</a></p>\n        <p>A bunch of useful stuff in this <a href=\"https://llm.datasette.io/\">LLM</a> alpha, but the most important detail is this one:</p>\n<blockquote>\n<p>Most reasoning-capable OpenAI models now use the <a href=\"https://platform.openai.com/docs/api-reference/responses\"><code>/v1/responses</code></a> endpoint instead of <code>/v1/chat/completions</code>. This enables interleaved reasoning across tool calls for GPT-5 class models. <a href=\"https://github.com/simonw/llm/pull/1435\">#1435</a></p>\n</blockquote>\n<p>This means you can now see the summarized reasoning tokens when you run prompts against an OpenAI model, displayed in a different color to standard error. Use the <code>-R</code> or <code>--hide-reasoning</code> flags if you don't want to see that.</p>",
     "summary_type": "html"
   }
 ]
