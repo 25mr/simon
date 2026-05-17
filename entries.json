@@ -1,5 +1,19 @@
 [
   {
+    "title": "Warelay -> OpenClaw",
+    "link": "https://simonwillison.net/2026/May/16/openclaw-names/#atom-everything",
+    "updated": "2026-05-16T20:23:30+00:00",
+    "summary": "<p>In preparation for a lightning talk I'm giving at PyCon US <a href=\"https://us.pycon.org/2026/schedule/presentation/175/\">this afternoon</a> I decided to figure out how many names OpenClaw has <em>actually</em> had since that <a href=\"https://github.com/openclaw/openclaw/commit/f6dd362d39b8e30bd79ef7560aab9575712ccc11\">first commit</a> back in November.</p>\n<p>Thanks to this <a href=\"https://tools.simonwillison.net/python/#first_line_historypy\">first_line_history.py tool</a> (<a href=\"https://github.com/simonw/tools/blob/main/python/first_line_history.py\">code here</a>) the answer, according to the Git history of the OpenClaw README, is:</p>\n<p>Warelay → CLAWDIS → CLAWDBOT → Clawdbot → Moltbot →🦞 OpenClaw</p>\n<p>Or in detail (the output from the tool):</p>\n<pre>\n2025-11-24T11:23:15+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/16dfc1a\">16dfc1a</a> # Warelay — WhatsApp Relay CLI (Twilio)\n2025-11-24T11:41:37+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/d4153da\">d4153da</a> # 📡 Warelay — WhatsApp Relay CLI (Twilio)\n2025-11-24T17:47:57+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/343ef9b\">343ef9b</a> # 📡 warelay — WhatsApp Relay CLI (Twilio)\n2025-11-25T04:44:10+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/14b3c6f\">14b3c6f</a> # 📡 warelay — WhatsApp Relay CLI\n2025-11-25T12:48:40+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/4814021\">4814021</a> # 📡 warelay — Send, receive, and auto-reply on WhatsApp—Twilio-backed or QR-linked.\n2025-11-25T13:50:18+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/d51a3e9\">d51a3e9</a> # warelay 📡 - Send, receive, and auto-reply on WhatsApp via Twilio or QR-linked WhatsApp Web; webhook setup in one command\n2025-11-25T13:51:13+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/4d2a8a8\">4d2a8a8</a> # 📡 warelay — Send, receive, and auto-reply on WhatsApp—Twilio-backed or QR-linked.\n2025-11-25T14:52:43+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/1ef7f4d\">1ef7f4d</a> # 📡 warelay — Send, receive, and auto-reply on WhatsApp.\n2025-12-03T15:45:32+00:00 <a href=\"https://github.com/openclaw/openclaw/commit/a27ee23\">a27ee23</a> # 🦞 CLAWDIS — WhatsApp Gateway for AI Agents\n2025-12-08T12:43:13+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/17fa2f4\">17fa2f4</a> # 🦞 CLAWDIS — WhatsApp &amp; Telegram Gateway for AI Agents\n2025-12-19T18:41:17+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/7710439\">7710439</a> # 🦞 CLAWDIS — Personal AI Assistant\n2026-01-04T14:32:47+00:00 <a href=\"https://github.com/openclaw/openclaw/commit/246adaa\">246adaa</a> # 🦞 CLAWDBOT — Personal AI Assistant\n2026-01-10T05:14:09+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/cdb915d\">cdb915d</a> # 🦞 Clawdbot — Personal AI Assistant\n2026-01-27T13:37:47-05:00 <a href=\"https://github.com/openclaw/openclaw/commit/3fe4b25\">3fe4b25</a> # 🦞 Moltbot — Personal AI Assistant\n2026-01-30T03:15:10+01:00 <a href=\"https://github.com/openclaw/openclaw/commit/9a71607\">9a71607</a> # 🦞 OpenClaw — Personal AI Assistant\n</pre>",
+    "summary_type": "html"
+  },
+  {
+    "title": "Quoting Julia Evans",
+    "link": "https://simonwillison.net/2026/May/16/julia-evans/#atom-everything",
+    "updated": "2026-05-16T16:45:37+00:00",
+    "summary": "<blockquote cite=\"https://jvns.ca/blog/2026/05/15/moving-away-from-tailwind--and-learning-to-structure-my-css-/\"><p>[...] in the last 10 years I’ve learned to really love and respect CSS as a technology.</p>\n<p>So I decided years ago that I wanted to react to “CSS is hard” by getting better at CSS and taking it seriously as a technology, instead of devaluing it. Doing that changed everything for me: I learned that so many of my frustrations (“centering is impossible”) had been addressed in CSS a long time ago, and that also what “centering” means is not always straightforward and it makes sense that there are many ways to do it. CSS is hard because it’s solving a hard problem!</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://jvns.ca/blog/2026/05/15/moving-away-from-tailwind--and-learning-to-structure-my-css-/\">Julia Evans</a>, Moving away from Tailwind, and learning to structure my CSS</p>",
+    "summary_type": "html"
+  },
+  {
     "title": "inaturalist-clumper 0.1",
     "link": "https://simonwillison.net/2026/May/15/inaturalist-clumper/#atom-everything",
     "updated": "2026-05-15T23:53:11+00:00",
@@ -53,20 +67,6 @@
     "link": "https://simonwillison.net/2026/May/13/welcome-to-the-datasette-blog/#atom-everything",
     "updated": "2026-05-13T23:59:39+00:00",
     "summary": "<p><strong><a href=\"https://datasette.io/blog/2026/new-blog/\">Welcome to the Datasette blog</a></strong></p>\nWe have a bunch of neat Datasette announcements in the pipeline so we decided it was time the project grew an official blog.</p>\n<p>I built this using OpenAI Codex desktop, which turns out to have the Markdown session transcript export feature I've always wanted. Here's <a href=\"https://gist.github.com/simonw/885b11eee46822622b8031a1f4e5f3a3\">the session that built the blog</a>. See also <a href=\"https://github.com/simonw/datasette.io/issues/179\">issue 179</a>.",
-    "summary_type": "html"
-  },
-  {
-    "title": "Quoting Boris Mann",
-    "link": "https://simonwillison.net/2026/May/13/boris-mann/#atom-everything",
-    "updated": "2026-05-13T16:15:50+00:00",
-    "summary": "<blockquote cite=\"https://bsky.app/profile/bmann.ca/post/3mlp2ipupv22z\"><p>“11 AI agents” is meaningless as a phrase. </p>\n<p>If I said “I have 11 spreadsheets” or “I have 11 browser tabs” to do my work, it means about the same thing.</p></blockquote>\n<p class=\"cite\">&mdash; <a href=\"https://bsky.app/profile/bmann.ca/post/3mlp2ipupv22z\">Boris Mann</a></p>",
-    "summary_type": "html"
-  },
-  {
-    "title": "CSP Allow-list Experiment",
-    "link": "https://simonwillison.net/2026/May/13/csp-allow/#atom-everything",
-    "updated": "2026-05-13T04:50:45+00:00",
-    "summary": "<p><strong>Tool:</strong> <a href=\"https://tools.simonwillison.net/csp-allow\">CSP Allow-list Experiment</a></p>\n        <p>An experiment that shows that you can load an app in a CSP-protected sandboxed iframe (see <a href=\"https://simonwillison.net/2026/Apr/3/test-csp-iframe-escape/\">previous note</a>) and have a custom <code>fetch()</code> that intercepts CSP errors and passes them up to the parent window... which can then prompt the user to add that domain to an allow-list and then refresh the page.</p>\n<p><img alt=\"Screenshot of a web tool titled &quot;CSP Allow-list Experiment&quot; with buttons Reset sample, Clear allow-list, Refresh preview. Left panel shows HTML source code starting with &lt;!doctype html&gt;. Right panel shows Preview with CSP header default-src 'none'; script-src 'unsafe-inline'; style-s... and heading &quot;Sandbox fetch test&quot;. A modal dialog from tools.simonwillison.net is overlaid reading: &quot;The sandbox tried to connect to: https://api.inaturalist.org   Add this origin to the CSP connect-src allow-list and refresh the page?&quot; with an unchecked checkbox &quot;Don't allow tools.simonwillison.net to prompt you again&quot; and Cancel and OK buttons. Below is &quot;Messages from sandbox&quot; showing fetch-catch blocked https://api.inaturalist.org/v1/observations?per... connect-src · https://api.inaturalist.org. At the bottom left is &quot;Allowed fetch() origins&quot; with an input field containing https://api.github.com, an Add button, and a tag https://api.github.com x.\" src=\"https://static.simonwillison.net/static/2026/csp-allow.jpg\" /></p>\n<p>I built this one with GPT-5.5 xhigh running in the Codex desktop app.</p>",
     "summary_type": "html"
   }
 ]
