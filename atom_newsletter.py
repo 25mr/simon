@@ -313,8 +313,8 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     # HEADER
     parts.append(
     '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:24px 16px;text-align:center;color:#FFFFFF;">'
-    f'<h1 style="margin:0;font-size:28px;line-height:1.1;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;font-family:\'Arial Black\',\'Segoe UI Black\',\'Helvetica Neue\',Helvetica,Arial,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;">🌶️ SIMON WILLISON</h1>'
-    f'<p style="margin:8px 0 0 0;font-size:13px;color:#94A3B8;letter-spacing:0.5px;">Updated at {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
+    f'<h1 style="margin:0;font-size:28px;line-height:1.1;font-weight:700;letter-spacing:-0.5px;text-transform:uppercase;font-family:\'Arial Black\',\'Segoe UI Black\',\'Helvetica Neue\',Helvetica,Arial,\'PingFang SC\',\'Microsoft YaHei\',sans-serif;">🥤 Simon TechBlog</h1>'
+    f'<p style="margin:8px 0 0 0;font-size:14px;color:#94A3B8;letter-spacing:-0.5px;">Updated at {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
     "</div>"
     )
 
