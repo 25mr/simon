@@ -274,7 +274,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
-    subject = f"🍈 Simon atom - {subject_date}"
+    subject = f"🍈 Simon TechBlog - {subject_date}"
 
     parts = []
     parts.append("<!DOCTYPE html>")
@@ -313,7 +313,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     # HEADER
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:20px 16px;text-align:center;color:#FFFFFF;">'
-        f'<h1 style="margin:0;font-size:30px;line-height:1.4;">Simon Willison\'s atom</h1>'
+        f'<h1 style="margin:0;font-size:30px;line-height:1.4;">🌶️ Simon Willison</h1>'
         f'<p style="margin:8px 0 0 0;font-size:14px;color:#CBD5E1;">Updated at {now_bj.strftime("%Y-%m-%d %H:%M")} UTC+8</p>'
         "</div>"
     )
@@ -392,7 +392,7 @@ def build_email_html(entries: List[Dict], with_translation: bool) -> str:
     # FOOTER
     parts.append(
         '<div style="background:linear-gradient(135deg,#0F172A,#1E293B);padding:16px;text-align:center;color:#FFFFFF;">'
-        '<p style="margin:0;font-size:12px;color:#CBD5E1;">'
+        '<p style="margin:0;font-size:13px;color:#CBD5E1;">'
         'Source: simonwillison.net'
         "</p>"
         "</div>"
@@ -595,7 +595,7 @@ def main():
     beijing_tz = timezone(timedelta(hours=8))
     now_bj = datetime.now(beijing_tz)
     subject_date = now_bj.strftime("%Y-%m-%d")
-    subject = f"🍈 Simon atom - {subject_date}"
+    subject = f"🍈 Simon TechBlog - {subject_date}"
 
     try:
         email_html = build_email_html(entries, with_translation=True)
